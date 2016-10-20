@@ -9,22 +9,21 @@ and open the template in the editor.
 */
 
 .webform-client-form .webform-container-inline.webform-datepicker input.webform-calendar {
-  padding: 6px 12px;
-  display: block;
+    padding: 6px 12px;
+    display: block;
 }
+
 .webform-client-form .inline-field {
-  display: inline-block;
-  height: 65px;
+    display: inline-block;
+    height: 65px;
 }
-.webform-client-form .inline-field.date {
-  //vertical-align: bottom;
-}
-.webform-client-form .inline-field.date input[type=image]{
-  display: inline-block;
+
+.webform-client-form .inline-field.date input[type=image] {
+    display: inline-block;
 }
 
 a.print_data {
-    float:right;
+    float: right;
     display: inline-block;
 }
 
