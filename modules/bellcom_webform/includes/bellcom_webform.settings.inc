@@ -44,6 +44,8 @@ function bellcom_webform_sbsip_settings_form($form, $form_state, $node) {
   bellcom_webform_sbsip_settings_add_field($form, 'kle', $default, $components_options);
   //adding sagSkabelonId
   bellcom_webform_sbsip_settings_add_field($form, 'sagSkabelonId', $default, $components_options);
+  //adding bodyText
+  bellcom_webform_sbsip_settings_add_field($form, 'bodyText', $default, $components_options);
 
   $form['nid'] = array(
     '#type' => 'value',

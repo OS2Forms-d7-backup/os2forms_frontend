@@ -19,6 +19,7 @@ function bellcom_webform_module_sbsip_xml($params) {
   $os2formsId = bellcom_webform_get_setting_value('os2formsId', $config, $params);
   $kle = bellcom_webform_get_setting_value('kle', $config, $params);
   $sagSkabelonId = bellcom_webform_get_setting_value('sagSkabelonId', $config, $params);
+  $bodyText = bellcom_webform_get_setting_value('bodyText', $config, $params);
 
   $webform = node_load($params['node']->nid);
   $webform_title = $webform->title;
@@ -43,7 +44,7 @@ function bellcom_webform_module_sbsip_xml($params) {
     </Slutbruger>
     <Kvittering>
       <TitelTekst>$webform_title</TitelTekst>
-      <BodyTekst>Tak for din indsendelse af Fortrolighedserklæring. Du vil snarest muligt modtage information om adgangskonto m.m.</BodyTekst>
+      <BodyTekst>$bodyText</BodyTekst>
     </Kvittering>
     <MaaSendesTilDFF>ja</MaaSendesTilDFF>
   </DigitalForsendelse>
