@@ -9,7 +9,7 @@ function bellcom_webform_menu() {
   $items = array();
 
   $items['node/%webform_menu/webform/sbsip_xml'] = array(
-    'title' => 'SBSIS XML',
+    'title' => 'SBSYS XML',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('bellcom_webform_sbsip_settings_form', 1),
     'access callback' => 'node_access',
