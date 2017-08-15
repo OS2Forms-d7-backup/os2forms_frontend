@@ -1,13 +1,13 @@
 <?php
 
 /**
- * This function generates the SBSIP XML, fills it with values and returns is as string
+ * This function generates the SBSYS XML, fills it with values and returns is as string
  *
  * @param $params
  * @return string
  */
-function bellcom_webform_module_sbsip_xml($params) {
-  $nemid_cpr = bellcom_webform_module_sbsis_xml_get_value_by_type('nemid_cpr', $params);
+function bellcom_webform_module_sbsys_xml($params) {
+  $nemid_cpr = bellcom_webform_module_sbsys_xml_get_value_by_type('nemid_cpr', $params);
 
   $message = vcv_serviceplatformen_get_address($nemid_cpr);
   $nemid_name = $message['name'];
@@ -49,7 +49,7 @@ function bellcom_webform_module_sbsip_xml($params) {
     <MaaSendesTilDFF>ja</MaaSendesTilDFF>
   </DigitalForsendelse>
   <FormularData>";
-  foreach (bellcom_webform_module_sbsis_xml_get_fields_to_list($params) as $field_name => $field_value) {
+  foreach (bellcom_webform_module_sbsys_xml_get_fields_to_list($params) as $field_name => $field_value) {
     $xml .= "<$field_name>$field_value</$field_name>";
   }
   $xml .= "</FormularData>
@@ -64,7 +64,7 @@ function bellcom_webform_module_sbsip_xml($params) {
  * @param $params
  * @return int|string
  */
-function bellcom_webform_module_sbsis_xml_get_cid_by_type($type, $params) {
+function bellcom_webform_module_sbsys_xml_get_cid_by_type($type, $params) {
   $components = $params['node']->webform['components'];
 
   foreach($components as $cid => $component) {
@@ -81,7 +81,7 @@ function bellcom_webform_module_sbsis_xml_get_cid_by_type($type, $params) {
  * @param $params
  * @return int|string
  */
-function bellcom_webform_module_sbsis_xml_get_cid_by_form_key($form_key, $params) {
+function bellcom_webform_module_sbsys_xml_get_cid_by_form_key($form_key, $params) {
   $components = $params['node']->webform['components'];
 
   foreach($components as $cid => $component) {
@@ -99,10 +99,10 @@ function bellcom_webform_module_sbsis_xml_get_cid_by_form_key($form_key, $params
  * @param $params
  * @return mixed
  */
-function bellcom_webform_module_sbsis_xml_get_value_by_type($type, $params) {
+function bellcom_webform_module_sbsys_xml_get_value_by_type($type, $params) {
   $data = $params['submission']->data;
 
-  $cid = bellcom_webform_module_sbsis_xml_get_cid_by_type($type, $params);
+  $cid = bellcom_webform_module_sbsys_xml_get_cid_by_type($type, $params);
   if ($cid) {
     return reset($data[$cid]);
   }
@@ -115,10 +115,10 @@ function bellcom_webform_module_sbsis_xml_get_value_by_type($type, $params) {
  * @param $params
  * @return mixed
  */
-function bellcom_webform_module_sbsis_xml_get_value_by_form_key($form_key, $params) {
+function bellcom_webform_module_sbsys_xml_get_value_by_form_key($form_key, $params) {
   $data = $params['submission']->data;
 
-  $cid = bellcom_webform_module_sbsis_xml_get_cid_by_form_key($form_key, $params);
+  $cid = bellcom_webform_module_sbsys_xml_get_cid_by_form_key($form_key, $params);
   if ($cid) {
     return reset($data[$cid]);
   }
@@ -131,7 +131,7 @@ function bellcom_webform_module_sbsis_xml_get_value_by_form_key($form_key, $para
  * @param $params
  * @return array
  */
-function bellcom_webform_module_sbsis_xml_get_fields_to_list($params) {
+function bellcom_webform_module_sbsys_xml_get_fields_to_list($params) {
   $fields_to_list = array();
   $data = $params['submission']->data;
   foreach($params['node']->webform['components'] as $cid => $element) {

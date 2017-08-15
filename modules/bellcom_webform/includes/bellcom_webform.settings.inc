@@ -1,13 +1,13 @@
 <?php
 /**
- * Renders custom setting for SBSIP form
+ * Renders custom setting for SBSYS form
  *
  * @param $form
  * @param $form_state
  * @param $node
  * @return mixed
  */
-function bellcom_webform_sbsip_settings_form($form, $form_state, $node) {
+function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
   $components_options = array();
   foreach ($node->webform['components'] as $id => $component) {
     $components_options[$component['form_key']] = $component['name'];
@@ -23,7 +23,7 @@ function bellcom_webform_sbsip_settings_form($form, $form_state, $node) {
   $form['enabled'] = array(
     '#default_value' => $default['enabled'],
     '#type' => 'checkbox',
-    '#title' => t('Send SBSIP XML'),
+    '#title' => t('Send SBSYS XML'),
   );
 
   $form['fields'] = array(
@@ -39,13 +39,13 @@ function bellcom_webform_sbsip_settings_form($form, $form_state, $node) {
   );
 
   //adding os2formsId
-  bellcom_webform_sbsip_settings_add_field($form, 'os2formsId', $default, $components_options);
+  bellcom_webform_sbsys_settings_add_field($form, 'os2formsId', $default, $components_options);
   //adding kle
-  bellcom_webform_sbsip_settings_add_field($form, 'kle', $default, $components_options);
+  bellcom_webform_sbsys_settings_add_field($form, 'kle', $default, $components_options);
   //adding sagSkabelonId
-  bellcom_webform_sbsip_settings_add_field($form, 'sagSkabelonId', $default, $components_options);
+  bellcom_webform_sbsys_settings_add_field($form, 'sagSkabelonId', $default, $components_options);
   //adding bodyText
-  bellcom_webform_sbsip_settings_add_field($form, 'bodyText', $default, $components_options);
+  bellcom_webform_sbsys_settings_add_field($form, 'bodyText', $default, $components_options);
 
   $form['nid'] = array(
     '#type' => 'value',
@@ -75,7 +75,7 @@ function bellcom_webform_sbsip_settings_form($form, $form_state, $node) {
  * @param $default
  * @param $components_options
  */
-function bellcom_webform_sbsip_settings_add_field(&$form, $field_name, $default, $components_options) {
+function bellcom_webform_sbsys_settings_add_field(&$form, $field_name, $default, $components_options) {
   $form['fields'][$field_name] = array(
     '#type' => 'select',
     '#title' => t('@field_name value', array('@field_name' => $field_name)),
@@ -100,12 +100,12 @@ function bellcom_webform_sbsip_settings_add_field(&$form, $field_name, $default,
 }
 
 /**
- * bellcom_webform_sbsip_settings_form_submit: Implements submit hook
+ * bellcom_webform_sbsys_settings_form_submit: Implements submit hook
  *
  * @param $form
  * @param $form_state
  */
-function bellcom_webform_sbsip_settings_form_submit($form, &$form_state) {
+function bellcom_webform_sbsys_settings_form_submit($form, &$form_state) {
   $save = $form_state['values'];
   unset($save['nid']);
   unset($save['enabled']);
@@ -122,20 +122,20 @@ function bellcom_webform_sbsip_settings_form_submit($form, &$form_state) {
 
     if ($form_state['values']['enabled']) {
 
-      $bellcom_webform_sbsip_settings['nid'] = $form_state['values']['nid'];
-      $bellcom_webform_sbsip_settings['enabled'] = $form_state['values']['enabled'];
-      $bellcom_webform_sbsip_settings['data'] = $save;
+      $bellcom_webform_sbsysp_settings['nid'] = $form_state['values']['nid'];
+      $bellcom_webform_sbsys_settings['enabled'] = $form_state['values']['enabled'];
+      $bellcom_webform_sbsys_settings['data'] = $save;
 
-      drupal_write_record('bellcom_webform', $bellcom_webform_sbsip_settings);
+      drupal_write_record('bellcom_webform', $bellcom_webform_sbsysp_settings);
     }
   }
 
   if (!isset($form_state['values']['new'])) {
     // update settings
-    $bellcom_webform_sbsip_settings['nid'] = $form_state['values']['nid'];
-    $bellcom_webform_sbsip_settings['enabled'] = $form_state['values']['enabled'];
-    $bellcom_webform_sbsip_settings['data'] = $save;
-    drupal_write_record('bellcom_webform', $bellcom_webform_sbsip_settings, 'nid');
+    $bellcom_webform_sbsys_settings['nid'] = $form_state['values']['nid'];
+    $bellcom_webform_sbsys_settings['enabled'] = $form_state['values']['enabled'];
+    $bellcom_webform_sbsys_settings['data'] = $save;
+    drupal_write_record('bellcom_webform', $bellcom_webform_sbsys_settings, 'nid');
   }
 }
 
@@ -173,7 +173,7 @@ function bellcom_webform_get_setting($nid) {
  */
 function bellcom_webform_get_setting_value($name, $config, $params) {
   if ($config[$name] != 'custom') {
-    return bellcom_webform_module_sbsis_xml_get_value_by_form_key($config[$name], $params);
+    return bellcom_webform_module_sbsys_xml_get_value_by_form_key($config[$name], $params);
   } else {
     return $config[$name . "_custom"];
   }

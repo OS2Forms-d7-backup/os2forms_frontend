@@ -8,10 +8,10 @@ module_load_include('inc', 'bellcom_webform', 'includes/bellcom_webform.settings
 function bellcom_webform_menu() {
   $items = array();
 
-  $items['node/%webform_menu/webform/sbsip_xml'] = array(
+  $items['node/%webform_menu/webform/sbsys_xml'] = array(
     'title' => 'SBSYS XML',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('bellcom_webform_sbsip_settings_form', 1),
+    'page arguments' => array('bellcom_webform_sbsys_settings_form', 1),
     'access callback' => 'node_access',
     'access arguments' => array('update', 1),
     'file' => 'includes/bellcom_webform.settings.inc',
@@ -30,7 +30,7 @@ function bellcom_webform_mail_alter(&$message) {
     $node = $message['params']['node'];
     $submission = $message['params']['submission'];
     $config = bellcom_webform_get_setting($node->nid);
-    //$filename = 'sbsip_' . $node->nid . '_' .  $submission->sid . '.xml';
+    //$filename = 'sbsys_' . $node->nid . '_' .  $submission->sid . '.xml';
     $filename = 'os2forms.xml';
     if ($config['enabled']) {
       $html_capable = variable_get('webform_email_html_capable', FALSE);
@@ -62,7 +62,7 @@ function bellcom_webform_mail_alter(&$message) {
         $message['body'][0] .= "Content-Transfer-Encoding: base64\n";
         $message['body'][0] .= "Content-Disposition: attachment; filename=\"$filename\"\n\n";
         $message['body'][0] .= chunk_split(base64_encode(
-          bellcom_webform_module_sbsip_xml($message['params'])
+          bellcom_webform_module_sbsys_xml($message['params'])
         ));
         $message['body'][0] .= "\n\n";
         $message['body'][0] .= "--" . $trenner . "--";
