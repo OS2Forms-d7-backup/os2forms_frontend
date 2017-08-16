@@ -126,7 +126,7 @@ function bellcom_webform_sbsys_settings_form_submit($form, &$form_state) {
       $bellcom_webform_sbsys_settings['enabled'] = $form_state['values']['enabled'];
       $bellcom_webform_sbsys_settings['data'] = $save;
 
-      drupal_write_record('bellcom_webform', $bellcom_webform_sbsysp_settings);
+      drupal_write_record('bellcom_webform', $bellcom_webform_sbsys_settings);
     }
   }
 
