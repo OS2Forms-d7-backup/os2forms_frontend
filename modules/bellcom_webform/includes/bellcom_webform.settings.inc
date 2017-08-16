@@ -122,7 +122,7 @@ function bellcom_webform_sbsys_settings_form_submit($form, &$form_state) {
 
     if ($form_state['values']['enabled']) {
 
-      $bellcom_webform_sbsysp_settings['nid'] = $form_state['values']['nid'];
+      $bellcom_webform_sbsys_settings['nid'] = $form_state['values']['nid'];
       $bellcom_webform_sbsys_settings['enabled'] = $form_state['values']['enabled'];
       $bellcom_webform_sbsys_settings['data'] = $save;
 
