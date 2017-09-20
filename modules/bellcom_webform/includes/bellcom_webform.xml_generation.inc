@@ -8,7 +8,6 @@
  */
 function bellcom_webform_module_sbsys_xml($params) {
   $nemid_cpr = bellcom_webform_module_sbsys_xml_get_value_by_type('nemid_cpr', $params);
-
   $message = vcv_serviceplatformen_get_address($nemid_cpr);
   $nemid_name = $message['name'];
   $nemid_address = $message['road'] . ' ' . $message['road_no'] . ' ' . $message['floor'] . ' ' . $message['door'];
@@ -23,7 +22,14 @@ function bellcom_webform_module_sbsys_xml($params) {
 
   $webform = node_load($params['node']->nid);
   $webform_title = $webform->title;
-
+  $fields = bellcom_webform_module_sbsys_xml_get_fields_to_list($params);
+  $maxRoom = $fields['antal_rum_max'];
+  $minRoom = $fields['antal_rum_min'];
+  $priorities = array();
+  for($i=1;  $i<=4; $i++) {
+    if ($fields['priority_'.$i])
+        $priorities[] = $fields['priority_'.$i];
+  }
   $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <os2formsFormular>
   <OS2FormsId>$os2formsId</OS2FormsId>
@@ -47,9 +53,14 @@ function bellcom_webform_module_sbsys_xml($params) {
       <BodyTekst>$bodyText</BodyTekst>
     </Kvittering>
     <MaaSendesTilDFF>ja</MaaSendesTilDFF>
+    <Room>
+      <Min>$minRoom</Min>
+      <Max>$maxRoom</Max>
+    </Room>
+    <Omraade>" . implode(',', $priorities) . "</Omraade>
   </DigitalForsendelse>
   <FormularData>";
-  foreach (bellcom_webform_module_sbsys_xml_get_fields_to_list($params) as $field_name => $field_value) {
+  foreach ($fields as $field_name => $field_value) {
     $xml .= "<$field_name>$field_value</$field_name>";
   }
   $xml .= "</FormularData>
