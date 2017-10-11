@@ -52,14 +52,21 @@ function bellcom_webform_module_sbsys_xml($params) {
       <TitelTekst>$webform_title</TitelTekst>
       <BodyTekst>$bodyText</BodyTekst>
     </Kvittering>
-    <MaaSendesTilDFF>ja</MaaSendesTilDFF>
-    <Room>
+    <MaaSendesTilDFF>ja</MaaSendesTilDFF>";
+
+  if (isset($minRoom) || isset($maxRoom)) {
+    $xml .= "<Room>
       <Min>$minRoom</Min>
       <Max>$maxRoom</Max>
-    </Room>
-    <Omraade>" . implode(',', $priorities) . "</Omraade>
-  </DigitalForsendelse>
+    </Room>";
+  }
+
+  if (!empty($priorities)) {
+    $xml .= "<Omraade>" . implode(',', $priorities) . "</Omraade>";
+  }
+  $xml .= "</DigitalForsendelse>
   <FormularData>";
+  
   foreach ($fields as $field_name => $field_value) {
     $xml .= "<$field_name>$field_value</$field_name>";
   }
