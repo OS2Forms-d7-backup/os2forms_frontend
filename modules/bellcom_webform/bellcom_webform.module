@@ -28,7 +28,7 @@ function bellcom_webform_menu() {
 function bellcom_webform_mail_alter(&$message) {
   if (($message['id'] == 'webform_submission') && isset($message['params']['node']) && isset($message['params']['submission'])) {
     $node = $message['params']['node'];
-    $submission = $message['params']['submission'];
+     $submission = $message['params']['submission'];
     $config = bellcom_webform_get_setting($node->nid);
     //$filename = 'sbsys_' . $node->nid . '_' .  $submission->sid . '.xml';
     $filename = 'os2forms.xml';
