@@ -1,4 +1,5 @@
 <?php
+module_load_include('inc', 'bellcom_webform', 'includes/bellcom_webform.custom_pdf_name');
 module_load_include('inc', 'bellcom_webform', 'includes/bellcom_webform.xml_generation');
 module_load_include('inc', 'bellcom_webform', 'includes/bellcom_webform.settings');
 
@@ -22,13 +23,45 @@ function bellcom_webform_menu() {
   return $items;
 }
 
+/**
+ * Implements hook_theme_registry_alter
+ */
+function bellcom_webform_theme_registry_alter(&$theme_registry) {
+  $theme_registry['webform2pdf_filename']['function'] = 'bellcom_webform_webform2pdf_filename';
+}
+
+function bellcom_webform_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'webform2pdf_edit_form') {
+    $name = db_select('bellcom_webform_custom_pdf_name', 'b')
+      ->fields('b', array('name'))
+      ->condition('nid', $form['nid']['#value'])
+      ->execute()
+      ->fetchField();
+
+    $form['base']['bellcom_webform_custom_pdf_name'] = array(
+      '#title' => t('Custom PDF name'),
+      '#type' => 'textfield',
+      '#maxlength' => 255,
+      '#default_value' => $name,
+      '#description' => t('Provide a custom PDF name e.g. <i>myform.pdf</i>, if none is specified a default one will be used. <br>
+      <b>Please note that extension (.pdf) is a mandatory part of the name</b><br><br>
+      Available tokens: <br>
+      <b>@nid</b> => node id of the form<br>
+      <b>@sid</b> => submission id
+      '),
+    );
+
+    $form['#submit'][] = 'bellcom_webform_custom_pdf_name_form_submit';
+  }
+}
+
 /*
 * bellcom_webform_mail_alter: hook_mail_alter
 */
 function bellcom_webform_mail_alter(&$message) {
   if (($message['id'] == 'webform_submission') && isset($message['params']['node']) && isset($message['params']['submission'])) {
     $node = $message['params']['node'];
-     $submission = $message['params']['submission'];
+    $submission = $message['params']['submission'];
     $config = bellcom_webform_get_setting($node->nid);
     //$filename = 'sbsys_' . $node->nid . '_' .  $submission->sid . '.xml';
     $filename = 'os2forms.xml';
