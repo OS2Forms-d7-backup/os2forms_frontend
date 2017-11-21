@@ -4,12 +4,11 @@
  * and open the template in the editor.
  */
 
-(function ($) { 
-    $('.datepicker-wrap .input-group.date').datepicker({
+jQuery(document).ready(function() {
+    jQuery('.datepicker-wrap .input-group.date').datepicker({
         language: "da",
         autoclose: true,
         format: 'dd/mm/yyyy',
         todayHighlight: true,
     });
-
-}(jQuery));
+});
