@@ -45,7 +45,7 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
   //adding sagSkabelonId
   bellcom_webform_sbsys_settings_add_field($form, 'sagSkabelonId', $default, $components_options);
   //adding bodyText
-  bellcom_webform_sbsys_settings_add_field($form, 'bodyText', $default, $components_options);
+  bellcom_webform_sbsys_settings_add_field($form, 'bodyText', $default, $components_options, 'textarea');
 
   $form['nid'] = array(
     '#type' => 'value',
@@ -74,8 +74,9 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
  * @param $field_name
  * @param $default
  * @param $components_options
+ * @param $field_type
  */
-function bellcom_webform_sbsys_settings_add_field(&$form, $field_name, $default, $components_options) {
+function bellcom_webform_sbsys_settings_add_field(&$form, $field_name, $default, $components_options, $field_type = 'textfield') {
   $form['fields'][$field_name] = array(
     '#type' => 'select',
     '#title' => t('@field_name value', array('@field_name' => $field_name)),
@@ -83,19 +84,34 @@ function bellcom_webform_sbsys_settings_add_field(&$form, $field_name, $default,
     '#default_value' => $default[$field_name],
     '#description' => t('Select a value from form submitted fields or provide a custom static value'),
   );
-  $form['fields'][$field_name . '_custom'] = array(
-    '#type' => 'textfield',
-    '#title' => t('@field_name custom text', array('@field_name' => $field_name)),
-    '#default_value' => $default[$field_name . '_custom'],
-    '#size' => 60,
-    '#maxlength' => 128,
-    '#states' => array(
-      'visible' => array(
-        ':input[name="' . $field_name . '"]' => array('value' => 'custom'),
+  if ($field_type == 'textfield') {
+    $form['fields'][$field_name . '_custom'] = array(
+      '#type' => 'textfield',
+      '#title' => t('@field_name custom text', array('@field_name' => $field_name)),
+      '#default_value' => $default[$field_name . '_custom'],
+      '#size' => 60,
+      '#maxlength' => 128,
+      '#states' => array(
+        'visible' => array(
+          ':input[name="' . $field_name . '"]' => array('value' => 'custom'),
+        ),
       ),
-    ),
-    '#description' => t('Provide a custom static value'),
-  );
+      '#description' => t('Provide a custom static value'),
+    );
+  } else {
+    $form['fields'][$field_name . '_custom'] = array(
+      '#type' => 'textarea',
+      '#title' => t('@field_name custom text', array('@field_name' => $field_name)),
+      '#default_value' => $default[$field_name . '_custom'],
+      '#states' => array(
+        'visible' => array(
+          ':input[name="' . $field_name . '"]' => array('value' => 'custom'),
+        ),
+      ),
+      '#description' => t('Provide a custom static value'),
+    );
+  }
+
   $form['fields'][] = array('#markup' => '<hr/>');
 }
 
