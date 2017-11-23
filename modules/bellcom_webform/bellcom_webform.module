@@ -111,3 +111,12 @@ function bellcom_webform_module_implements_alter(&$implementations, $hook) {
     $implementations['bellcom_webform'] = $group;
   }
 }
+
+function bellcom_webform_hide_submit_alter(&$hide_submit_settings) {
+  $current_path = current_path();
+
+  //$hide_submit_settings['hide_submit']['hide_submit_status'] = FALSE;
+  if (strpos($current_path, 'node/') !== 0) {
+    $hide_submit_settings['hide_submit']['hide_submit_status'] = FALSE;
+  }
+}
