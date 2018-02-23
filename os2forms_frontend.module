@@ -60,3 +60,8 @@ include_once 'os2forms_frontend.features.inc';
 //  return $output;
 //
 //}
+function os2forms_frontend_webform_component_defaults_alter(&$defaults, $type) {
+  if ($type == 'file') {
+    $defaults['extra']['scheme'] = 'private';
+  }
+}
