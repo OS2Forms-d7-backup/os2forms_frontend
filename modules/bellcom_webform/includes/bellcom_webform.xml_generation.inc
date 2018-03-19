@@ -8,12 +8,22 @@
  */
 function bellcom_webform_module_sbsys_xml($params) {
   $nemid_cpr = bellcom_webform_module_sbsys_xml_get_value_by_type('nemid_cpr', $params);
-  $message = vcv_serviceplatformen_get_address($nemid_cpr);
-  $nemid_name = $message['name'];
-  $nemid_address = $message['road'] . ' ' . $message['road_no'] . ' ' . $message['floor'] . ' ' . $message['door'];
-  $nemid_city = $message['city'];
-  $nemid_zipcode = $message['zipcode'];
-
+  $nemid_com_cvr = bellcom_webform_module_sbsys_xml_get_value_by_type('nemid_com_cvr', $params);
+  if (isset($nemid_com_cvr) && !empty($nemid_com_cvr)) {
+    $message = cvr_serviceplatformen_query_info($nemid_com_cvr);
+    $nemid_name = $message['company_name'];
+    $nemid_address = $message['company_street'] . ' ' . $message['company_house_nr'] . ' ' . $message['company_'];
+    $nemid_city = $message['company_city'];
+    $nemid_zipcode = $message['company_zipcode'];
+}
+  if (isset($nemid_cpr) && !empty($nemid_cpr)) {
+    $message = vcv_serviceplatformen_get_address($nemid_cpr);
+    $nemid_name = $message[name];
+    $nemid_address = $message['road'] . ' ' . $message['road_no'] . ' ' . $message['floor'] . ' ' . $message['door'];
+    $nemid_city = $message['city'];
+    $nemid_zipcode = $message['zipcode'];
+  }
+ 
   $config = bellcom_webform_get_setting($params['node']->nid);
   $os2formsId = bellcom_webform_get_setting_value('os2formsId', $config, $params);
   $kle = bellcom_webform_get_setting_value('kle', $config, $params);
@@ -34,19 +44,19 @@ function bellcom_webform_module_sbsys_xml($params) {
 <os2formsFormular>
   <OS2FormsId>$os2formsId</OS2FormsId>
   <SBSYSJournalisering>
-    <PrimaerPartCprNummer>$nemid_cpr</PrimaerPartCprNummer>
-    <PrimaerPartCvrNummer></PrimaerPartCvrNummer>
+    <PrimaerPartCprNummer>" . ((!empty($nemid_cpr)) ? $nemid_cpr : '' ) . "</PrimaerPartCprNummer>
+    <PrimaerPartCvrNummer>" . ((!empty($nemid_com_cvr)) ? $nemid_com_cvr : '') . "</PrimaerPartCvrNummer>
     <KLe>$kle</KLe>
     <SagSkabelonId>$sagSkabelonId</SagSkabelonId>
   </SBSYSJournalisering>
   <DigitalForsendelse>
     <Slutbruger>
-      <CprNummer>$nemid_cpr</CprNummer>
-      <CvrNummer></CvrNummer>
-      <Navn>$nemid_name</Navn>
-      <Adresse>$nemid_address</Adresse>
-      <Postnr>$nemid_zipcode</Postnr>
-      <Postdistrikt>$nemid_city</Postdistrikt>
+      <CprNummer>" . ((!empty($nemid_cpr)) ? $nemid_cpr : ''  ) . "</CprNummer>
+      <CvrNummer>" . ((!empty($nemid_com_cvr)) ? $nemid_com_cvr : '') . "</CvrNummer>
+      <Navn>" . ((isset($nemid_name)) ? $nemid_name : '') . "</Navn>
+      <Adresse>" . ((isset($nemid_address)) ? $nemid_address : '') . "</Adresse>
+      <Postnr>" . ((isset($nemid_zipcode)) ? $nemid_zipcode : '') . "</Postnr>
+      <Postdistrikt>" . ((isset($nemid_city)) ? $nemid_city : '') . "</Postdistrikt>
     </Slutbruger>
     <Kvittering>
       <TitelTekst>$webform_title</TitelTekst>
