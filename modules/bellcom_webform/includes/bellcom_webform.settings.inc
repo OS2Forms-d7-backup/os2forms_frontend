@@ -5,6 +5,7 @@
  * @param $form
  * @param $form_state
  * @param $node
+ *
  * @return mixed
  */
 function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
@@ -28,7 +29,7 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
 
   if (module_exists('os2forms_server_communication')) {
     $form['anonymize_submission'] = array(
-      '#default_value' => $default['anonymize_submission'],
+      '#default_value' => isset($default['anonymize_submission']) ? $default['anonymize_submission'] : NULL,
       '#type' => 'checkbox',
       '#title' => t('Anonymize submission on XML sending'),
       '#states' => array(
@@ -111,7 +112,8 @@ function bellcom_webform_sbsys_settings_add_field(&$form, $field_name, $default,
       ),
       '#description' => t('Provide a custom static value'),
     );
-  } else {
+  }
+  else {
     $form['fields'][$field_name . '_custom'] = array(
       '#type' => 'textarea',
       '#title' => t('@field_name custom text', array('@field_name' => $field_name)),
@@ -172,6 +174,7 @@ function bellcom_webform_sbsys_settings_form_submit($form, &$form_state) {
  * Get bellcom_webform setting for the specified nid.
  *
  * @param $nid
+ *
  * @return array
  */
 function bellcom_webform_get_setting($nid) {
@@ -198,12 +201,14 @@ function bellcom_webform_get_setting($nid) {
  * @param $name
  * @param $config
  * @param $params
+ *
  * @return mixed
  */
 function bellcom_webform_get_setting_value($name, $config, $params) {
   if ($config[$name] != 'custom') {
     return bellcom_webform_module_sbsys_xml_get_value_by_form_key($config[$name], $params);
-  } else {
+  }
+  else {
     return $config[$name . "_custom"];
   }
 }
