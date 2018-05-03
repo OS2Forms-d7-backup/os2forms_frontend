@@ -33,13 +33,21 @@ function bellcom_webform_module_sbsys_xml($params) {
   $webform = node_load($params['node']->nid);
   $webform_title = $webform->title;
   $fields = bellcom_webform_module_sbsys_xml_get_fields_to_list($params);
-  $maxRoom = $fields['antal_rum_max'];
-  $minRoom = $fields['antal_rum_min'];
-  $priorities = array();
-  for($i=1;  $i<=4; $i++) {
-    if ($fields['priority_'.$i])
-        $priorities[] = $fields['priority_'.$i];
+
+  if (isset($fields['antal_rum_max'])) {
+    $maxRoom = $fields['antal_rum_max'];
   }
+  if (isset($fields['antal_rum_min'])) {
+    $minRoom = $fields['antal_rum_min'];
+  }
+  if (isset($fields['priority_1'])) {
+    $priorities = array();
+    for($i=1;  $i<=4; $i++) {
+      if ($fields['priority_'.$i])
+          $priorities[] = $fields['priority_'.$i];
+    }
+  }
+
   $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <os2formsFormular>
   <OS2FormsId>$os2formsId</OS2FormsId>

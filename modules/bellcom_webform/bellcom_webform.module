@@ -63,10 +63,17 @@ function bellcom_webform_mail_alter(&$message) {
     $node = $message['params']['node'];
     $submission = $message['params']['submission'];
     $config = bellcom_webform_get_setting($node->nid);
-    //$filename = 'sbsys_' . $node->nid . '_' .  $submission->sid . '.xml';
+
     $filename = 'os2forms.xml';
     if ($config['enabled']) {
+      // Generating submission id.
+      if ($config['anonymize_submission'] && module_exists('os2forms_server_communication')) {
+        $generated_submission_id = os2forms_server_communication_generate_submission_id();
+        $message['params']['submission']->data['submission_id'] = $generated_submission_id;
+      }
+
       $html_capable = variable_get('webform_email_html_capable', FALSE);
+
       if ($html_capable) {
         if (module_exists('mimemail')) {
           $attachment = new stdClass;
@@ -94,6 +101,11 @@ function bellcom_webform_mail_alter(&$message) {
         ));
         $message['body'][0] .= "\n\n";
         $message['body'][0] .= "--" . $trenner . "--";
+      }
+
+      // Scheduling submission to be cleared.
+      if ($config['anonymize_submission'] && module_exists('os2forms_server_communication')) {
+        os2forms_server_communication_schedule_submission_clearing($node->nid, $submission->sid, $generated_submission_id);
       }
     }
   }
