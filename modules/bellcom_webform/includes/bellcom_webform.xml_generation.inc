@@ -176,7 +176,7 @@ function bellcom_webform_module_sbsys_xml_get_fields_to_list($params) {
     if ($element['type'] == 'markup') {
       $fields_to_list[$field_name] = $element['value'];
     }
-    elseif ($data[$cid]) {
+    elseif ($data && isset($data[$cid])) {
       $fields_to_list[$field_name] = reset($data[$cid]);
     }
   }
