@@ -170,13 +170,13 @@ function bellcom_webform_module_sbsys_xml_get_value_by_form_key($form_key, $para
 function bellcom_webform_module_sbsys_xml_get_fields_to_list($params) {
   $fields_to_list = array();
   $data = $params['submission']->data;
-  foreach($params['node']->webform['components'] as $cid => $element) {
+  foreach ($params['node']->webform['components'] as $cid => $element) {
     $field_name = $element['form_key'];
     $field_name = preg_replace('/\W/', '_', $field_name);
-     if ($element['type'] == 'markup') {
+    if ($element['type'] == 'markup') {
       $fields_to_list[$field_name] = $element['value'];
-     }
-     else {
+    }
+    elseif ($data[$cid]) {
       $fields_to_list[$field_name] = reset($data[$cid]);
     }
   }
