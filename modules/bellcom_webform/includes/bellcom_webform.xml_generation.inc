@@ -11,17 +11,17 @@ function bellcom_webform_module_sbsys_xml($params) {
   $nemid_com_cvr = bellcom_webform_module_sbsys_xml_get_value_by_type('nemid_com_cvr', $params);
   if (isset($nemid_com_cvr) && !empty($nemid_com_cvr)) {
     $message = cvr_serviceplatformen_query_info($nemid_com_cvr);
-    $nemid_name = $message['company_name'];
-    $nemid_address = $message['company_street'] . ' ' . $message['company_house_nr'] . ' ' . $message['company_'];
-    $nemid_city = $message['company_city'];
-    $nemid_zipcode = $message['company_zipcode'];
+    $nemid_name = htmlspecialchars($message['company_name']);
+    $nemid_address = htmlspecialchars($message['company_street'] . ' ' . $message['company_house_nr'] . ' ' . $message['company_']);
+    $nemid_city = htmlspecialchars($message['company_city']);
+    $nemid_zipcode = htmlspecialchars($message['company_zipcode']);
 }
   if (isset($nemid_cpr) && !empty($nemid_cpr)) {
     $message = vcv_serviceplatformen_get_address($nemid_cpr);
-    $nemid_name = $message[name];
-    $nemid_address = $message['road'] . ' ' . $message['road_no'] . ' ' . $message['floor'] . ' ' . $message['door'];
-    $nemid_city = $message['city'];
-    $nemid_zipcode = $message['zipcode'];
+    $nemid_name = htmlspecialchars($message['name']);
+    $nemid_address = htmlspecialchars($message['road'] . ' ' . $message['road_no'] . ' ' . $message['floor'] . ' ' . $message['door']);
+    $nemid_city = htmlspecialchars($message['city']);
+    $nemid_zipcode = htmlspecialchars($message['zipcode']);
   }
  
   $config = bellcom_webform_get_setting($params['node']->nid);
@@ -31,20 +31,20 @@ function bellcom_webform_module_sbsys_xml($params) {
   $bodyText = bellcom_webform_get_setting_value('bodyText', $config, $params);
 
   $webform = node_load($params['node']->nid);
-  $webform_title = $webform->title;
+  $webform_title = htmlspecialchars($webform->title);
   $fields = bellcom_webform_module_sbsys_xml_get_fields_to_list($params);
 
   if (isset($fields['antal_rum_max'])) {
-    $maxRoom = $fields['antal_rum_max'];
+    $maxRoom = htmlspecialchars($fields['antal_rum_max']);
   }
   if (isset($fields['antal_rum_min'])) {
-    $minRoom = $fields['antal_rum_min'];
+    $minRoom = htmlspecialchars($fields['antal_rum_min']);
   }
   if (isset($fields['priority_1'])) {
     $priorities = array();
     for($i=1;  $i<=4; $i++) {
       if ($fields['priority_'.$i])
-          $priorities[] = $fields['priority_'.$i];
+          $priorities[] = htmlspecialchars($fields['priority_'.$i]);
     }
   }
 
@@ -86,6 +86,7 @@ function bellcom_webform_module_sbsys_xml($params) {
   <FormularData>";
   
   foreach ($fields as $field_name => $field_value) {
+    $field_value = htmlspecialchars($field_value);
     $xml .= "<$field_name>$field_value</$field_name>";
   }
   $xml .= "</FormularData>

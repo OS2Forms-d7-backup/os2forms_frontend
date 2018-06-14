@@ -196,7 +196,9 @@ function bellcom_webform_get_setting($nid) {
 
 /**
  * Gets the actual value of the setting by name.
- * If custom text is used, then the custom text will be returned
+ * If custom text is used, then the custom text will be returned.
+ *
+ * Returned value is filtered through htmlspecialchars function.
  *
  * @param $name
  * @param $config
@@ -206,9 +208,9 @@ function bellcom_webform_get_setting($nid) {
  */
 function bellcom_webform_get_setting_value($name, $config, $params) {
   if ($config[$name] != 'custom') {
-    return bellcom_webform_module_sbsys_xml_get_value_by_form_key($config[$name], $params);
+    return htmlspecialchars(bellcom_webform_module_sbsys_xml_get_value_by_form_key($config[$name], $params));
   }
   else {
-    return $config[$name . "_custom"];
+    return htmlspecialchars($config[$name . "_custom"]);
   }
 }
