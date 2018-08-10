@@ -11,12 +11,18 @@ function bellcom_webform_custom_pdf_name_form_submit($form, $form_state) {
   $fields['nid'] = $nid;
   $fields['name'] = $form_state['values']['bellcom_webform_custom_pdf_name'];
 
-  $rows = db_update('bellcom_webform_custom_pdf_name')
+   $query = db_select('bellcom_webform_custom_pdf_name');
+  $query->condition('nid', $nid);
+  $query->addExpression('COUNT(*)');
+  $rows = $query->execute()->fetchField();
+
+  if ($rows > 0) {
+    $rows = db_update('bellcom_webform_custom_pdf_name')
     ->fields($fields)
     ->condition('nid', $nid)
     ->execute();
-
-  if (!$rows) {
+  }
+  else {
     db_insert('bellcom_webform_custom_pdf_name')
       ->fields($fields)
       ->execute();
