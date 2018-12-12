@@ -61,6 +61,50 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
   //adding bodyText
   bellcom_webform_sbsys_settings_add_field($form, 'bodyText', $default, $components_options, 'textarea');
 
+
+
+  $form['email'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('E-mail settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#states' => array(
+      'visible' => array(
+        'input[name="enabled"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+ $send_mail = array();
+  if ( !empty($node->webform['email']) ) {
+    $send_mail['email'] = $node->webform['email'];
+  }
+
+  if (is_array($node->webform['emails'])) {
+    foreach ($node->webform['emails'] as $eid => $email) {
+      $email_addresses = array_filter(explode(',', check_plain($email['email'])));
+      foreach ($email_addresses as $key => $email_address) {
+        $email_addresses[$key] = webform_format_email_address($email_address, NULL, $node, NULL, FALSE);
+      }
+
+      $send_mail[$eid] = implode(', ', $email_addresses);
+    }
+  }
+  if ( count($send_mail) ) {
+    if (isset($default['send_sbsys_email_addr'])) {
+      $def = $default['send_sbsys_email_addr'];
+    }
+    if (!isset($def) || !is_array($def) ) {
+      $def = array();
+    }
+
+    $form['email']['send_sbsys_email_addr'] = array(
+      '#title' => t("Send SBSYS file"),
+      '#type' => 'checkboxes',
+      '#options' => $send_mail,
+      '#default_value' => $def,
+      '#description' => t("SBSYS XML file will be attached to the e-mail sent to the following recipients."),
+    );
+  }
   $form['nid'] = array(
     '#type' => 'value',
     '#value' => $node->nid,

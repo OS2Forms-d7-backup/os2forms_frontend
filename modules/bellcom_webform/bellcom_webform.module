@@ -72,6 +72,30 @@ function bellcom_webform_mail_alter(&$message) {
         $submission_id_cid = (string) _os2forms_server_communication_get_cid_by_form_key($node->nid, 'submission_id');
         $message['params']['submission']->data[$submission_id_cid][0] = $generated_submission_id;
       }
+      $send_sbsys_mail = isset($config['send_sbsys_email_addr']) ? $config['send_sbsys_email_addr'] : FALSE;
+      $send_email = FALSE;
+      if (is_array($send_sbsys_mail)) {
+        $send_sbsys_mail = array_diff($send_sbsys_mail, array(0));
+        if ( !empty($send_sbsys_mail) ) {
+          foreach ($send_sbsys_mail as $eid) {
+            $email_addresses = $node->webform['emails'][$eid]['email'];
+            if ( isset($node->webform['components'][$email_addresses]) ) {
+              $email_addresses = array_pop($submission->data[$email_addresses]);
+            }
+            else {
+              $email_addresses = array_filter(explode(',', check_plain($node->webform['emails'][$eid]['email'])));
+            }
+            if (is_array($email_addresses) && in_array($message['to'], $email_addresses) || trim($message['to']) == trim($email_addresses)) {
+              $send_email = TRUE;
+              break;
+            }
+          }
+        }
+      }
+
+      if ($send_email === FALSE) {
+        return;
+      }
 
       $html_capable = variable_get('webform_email_html_capable', FALSE);
 
