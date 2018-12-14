@@ -23,13 +23,32 @@ function bellcom_webform_module_sbsys_xml($params) {
     $nemid_city = htmlspecialchars($message['city']);
     $nemid_zipcode = htmlspecialchars($message['zipcode']);
   }
- 
+
   $config = bellcom_webform_get_setting($params['node']->nid);
   $os2formsId = bellcom_webform_get_setting_value('os2formsId', $config, $params);
   $kle = bellcom_webform_get_setting_value('kle', $config, $params);
   $sagSkabelonId = bellcom_webform_get_setting_value('sagSkabelonId', $config, $params);
   $bodyText = bellcom_webform_get_setting_value('bodyText', $config, $params);
-
+  $nemid_cpr_mapping_value = bellcom_webform_get_setting_value('nemid_cpr', $config, $params);
+  $nemid_name_mapping_value = bellcom_webform_get_setting_value('nemid_name', $config, $params);
+  $nemid_address_mapping_value = bellcom_webform_get_setting_value('nemid_address', $config, $params);
+  $nemid_zipcode_mapping_value = bellcom_webform_get_setting_value('nemid_zipcode', $config, $params);
+  $nemid_city_mapping_value = bellcom_webform_get_setting_value('nemid_city', $config, $params);
+  if ($nemid_cpr_mapping_value && $nemid_cpr_mapping_value != 'default_nemid_value') {
+    $nemid_cpr = $nemid_cpr_mapping_value;
+  }
+  if ($nemid_name_mapping_value && $nemid_name_mapping_value != 'default_nemid_value') {
+    $nemid_name = $nemid_name_mapping_value;
+  }
+  if ($nemid_address_mapping_value && $nemid_address_mapping_value != 'default_nemid_value') {
+    $nemid_address = $nemid_address_mapping_value;
+  }
+  if ($nemid_zipcode_mapping_value && $nemid_zipcode_mapping_value != 'default_nemid_value') {
+    $nemid_zipcode = $nemid_zipcode_mapping_value;
+  }
+  if ($nemid_city_mapping_value && $nemid_city_mapping_value != 'default_nemid_value') {
+    $nemid_city = $nemid_city_mapping_value;
+  }
   $webform = node_load($params['node']->nid);
   $webform_title = htmlspecialchars($webform->title);
   $fields = bellcom_webform_module_sbsys_xml_get_fields_to_list($params);
@@ -84,7 +103,7 @@ function bellcom_webform_module_sbsys_xml($params) {
   }
   $xml .= "</DigitalForsendelse>
   <FormularData>";
-  
+
   foreach ($fields as $field_name => $field_value) {
     $field_value = htmlspecialchars($field_value);
     $xml .= "<$field_name>$field_value</$field_name>";
