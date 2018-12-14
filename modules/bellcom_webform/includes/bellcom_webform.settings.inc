@@ -90,19 +90,19 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
     }
   }
   if ( count($send_mail) ) {
-    if (isset($default['send_sbsys_email_addr'])) {
-      $def = $default['send_sbsys_email_addr'];
+    if (isset($default['no_send_sbsys_email_addr'])) {
+      $def = $default['no_send_sbsys_email_addr'];
     }
     if (!isset($def) || !is_array($def) ) {
       $def = array();
     }
 
-    $form['email']['send_sbsys_email_addr'] = array(
-      '#title' => t("Send SBSYS file"),
+    $form['email']['no_send_sbsys_email_addr'] = array(
+      '#title' => t("Do not send SBSYS file"),
       '#type' => 'checkboxes',
       '#options' => $send_mail,
       '#default_value' => $def,
-      '#description' => t("SBSYS XML file will be attached to the e-mail sent to the following recipients."),
+      '#description' => t("SBSYS XML file will NOT be attached to the e-mail sent to the following recipients."),
     );
   }
   $form['nid'] = array(
