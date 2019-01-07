@@ -34,7 +34,8 @@ function bellcom_webform_module_sbsys_xml($params) {
   $nemid_address_mapping_value = bellcom_webform_get_setting_value('nemid_address', $config, $params);
   $nemid_zipcode_mapping_value = bellcom_webform_get_setting_value('nemid_zipcode', $config, $params);
   $nemid_city_mapping_value = bellcom_webform_get_setting_value('nemid_city', $config, $params);
-  $maa_sendes_til_dff = $config['MaaSendesTilDFF'];
+  $maa_sendes_til_dff = isset($config['MaaSendesTilDFF']) ? $config['MaaSendesTilDFF'] : 'ja';
+  
   if ($nemid_cpr_mapping_value && $nemid_cpr_mapping_value != 'default_nemid_value') {
     $nemid_cpr = $nemid_cpr_mapping_value;
   }
