@@ -72,6 +72,14 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
   //adding bodyText
   bellcom_webform_sbsys_settings_add_field($form, 'bodyText', $default, $components_options, 'textarea');
 
+  $form['fields']['MaaSendesTilDFF'] = array(
+    '#type' => 'select',
+    '#title' => t('@field_name value', array('@field_name' => 'MaaSendesTilDFF')),
+    '#options' => array('ja' => 'Ja', 'nej' => 'Nej'),
+    '#default_value' => $default['MaaSendesTilDFF'],
+    '#description' => t('Select a value from form submitted fields or provide a custom static value'),
+  );
+
   $form['nid'] = array(
     '#type' => 'value',
     '#value' => $node->nid,
