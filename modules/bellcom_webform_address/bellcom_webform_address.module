@@ -1,0 +1,65 @@
+<?php
+  
+/**
+ * Implemnts hook_webform_component_info().
+ */
+function bellcom_webform_address_webform_component_info() {
+  $components = array();
+  $components['address_autocomp'] = array(
+    'label' => t('Address autocomplete'),
+    'description' => t('Address automcomplete field.'),
+    'file' => 'components/address_autocomp.inc',
+  );
+  return $components;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function bellcom_webform_address_menu() {
+  $items['bellcom_webform_address_autocomplete/%'] = array(
+    'title' => 'Bellcom webform address autocomplete',
+    'page callback' => 'bellcom_webform_address_autocomplete',
+    'page arguments' => array(1),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Menu callback, returns a json string of suggestions from the API.
+ *
+ * @param string $mode
+ *   The field configuration of what needs to be returned as a suggestion.
+ * @param string $string
+ *   The textfield input we're sending to the API.
+ */
+function bellcom_webform_address_autocomplete($mode, $string) {
+  $matches = array();
+
+  if ($string) {
+    $json = '';
+    switch ($mode) {
+      case 'address':
+        $json = file_get_contents('https://dawa.aws.dk/adresser/autocomplete?q=' . urlencode($string));
+        break;
+
+      case 'block':
+        $json = file_get_contents('https://dawa.aws.dk/ejerlav/autocomplete?q=' . urlencode($string));
+        break;
+
+      case 'matrikula':
+        $json = file_get_contents('https://dawa.aws.dk/jordstykker/autocomplete?q=' . urlencode($string));
+        break;
+    }
+
+    $json_decoded = json_decode($json, true);
+    if (is_array($json_decoded)) {
+      $matches = array_column($json_decoded, 'tekst', 'tekst');
+    }
+  }
+
+  // Return the matches in json format, and stop the page execution.
+  drupal_json_output($matches);
+}
