@@ -77,7 +77,7 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
     '#type' => 'select',
     '#title' => t('@field_name value', array('@field_name' => 'MaaSendesTilDFF')),
     '#options' => array('ja' => 'Ja', 'nej' => 'Nej'),
-    '#default_value' => $default['MaaSendesTilDFF'],
+    '#default_value' => isset($default['MaaSendesTilDFF']) ? $default['MaaSendesTilDFF'] : '',
     '#description' => t('Select a value from form submitted fields or provide a custom static value'),
   );
 
@@ -115,7 +115,7 @@ function bellcom_webform_sbsys_settings_add_field(&$form, $field_name, $default,
     '#type' => 'select',
     '#title' => t('@field_name value', array('@field_name' => $field_name)),
     '#options' => $components_options,
-    '#default_value' => $default[$field_name],
+    '#default_value' => isset($default[$field_name]) ? $default[$field_name] : '',
     '#description' => t('Select a value from form submitted fields or provide a custom static value'),
   );
   if ($field_type == 'nemid_field' && empty($default[$field_name])) {
@@ -125,7 +125,7 @@ function bellcom_webform_sbsys_settings_add_field(&$form, $field_name, $default,
     $form['fields'][$field_name . '_custom'] = array(
       '#type' => 'textfield',
       '#title' => t('@field_name custom text', array('@field_name' => $field_name)),
-      '#default_value' => $default[$field_name . '_custom'],
+      '#default_value' => isset($default[$field_name . '_custom']) ? $default[$field_name . '_custom'] : '',
       '#size' => 60,
       '#maxlength' => 128,
       '#states' => array(
@@ -140,7 +140,7 @@ function bellcom_webform_sbsys_settings_add_field(&$form, $field_name, $default,
     $form['fields'][$field_name . '_custom'] = array(
       '#type' => 'textarea',
       '#title' => t('@field_name custom text', array('@field_name' => $field_name)),
-      '#default_value' => $default[$field_name . '_custom'],
+      '#default_value' => isset($default[$field_name . '_custom']) ? $default[$field_name . '_custom'] : '',
       '#states' => array(
         'visible' => array(
           ':input[name="' . $field_name . '"]' => array('value' => 'custom'),

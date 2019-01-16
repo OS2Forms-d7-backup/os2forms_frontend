@@ -74,7 +74,7 @@ function bellcom_webform_mail_alter(&$message) {
 
     // SBSYS Config.
     $sbsys_config = bellcom_webform_sbsys_get_setting($node->nid);
-    if ($sbsys_config['enabled']) {
+    if (isset($sbsys_config['enabled']) && $sbsys_config['enabled']) {
       // Generating submission id.
       if ($sbsys_config['anonymize_submission'] && module_exists('os2forms_server_communication')) {
         $generated_submission_id = os2forms_server_communication_generate_submission_id();
@@ -99,7 +99,7 @@ function bellcom_webform_mail_alter(&$message) {
 
     // Generate DOC config.
     $generate_doc_config = bellcom_webform_generate_doc_get_setting($node->nid);
-    if ($generate_doc_config['enabled']) {
+    if (isset($generate_doc_config) && $generate_doc_config['enabled']) {
       // Creating a file in a temporary dir.
       $file_uri = bellcom_webform_generate_doc_create_file($node, $submission);
       $file_size = filesize($file_uri);
