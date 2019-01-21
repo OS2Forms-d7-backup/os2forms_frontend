@@ -172,3 +172,17 @@ function bellcom_webform_hide_submit_alter(&$hide_submit_settings) {
     $hide_submit_settings['hide_submit']['hide_submit_status'] = FALSE;
   }
 }
+function bellcom_webform_webform2pdf_available_fonts_alter(&$font, $region) {
+  if (module_exists('webform2pdf')) {
+    include_once(libraries_get_path('tcpdf') . '/tcpdf.php');
+    $fontfile = TCPDF_FONTS::getFontFullPath('montserrat.php');
+    if (!TCPDF_STATIC::empty_string($fontfile) AND (@file_exists($fontfile))) {
+      $font['montserrat'] = 'Montserrat';
+    }
+    $fontfile = TCPDF_FONTS::getFontFullPath('verdana.php');
+    if (!TCPDF_STATIC::empty_string($fontfile) AND (@file_exists($fontfile))) {
+      $font['verdana'] = 'Verdana';
+    }
+
+  }
+}
