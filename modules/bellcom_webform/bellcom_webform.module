@@ -140,5 +140,10 @@ function bellcom_webform_webform2pdf_available_fonts_alter(&$font, $region) {
     if (!TCPDF_STATIC::empty_string($fontfile) AND (@file_exists($fontfile))) {
       $font['montserrat'] = 'Montserrat';
     }
+    $fontfile = TCPDF_FONTS::getFontFullPath('verdana.php');
+    if (!TCPDF_STATIC::empty_string($fontfile) AND (@file_exists($fontfile))) {
+      $font['verdana'] = 'Verdana';
+    }
+
   }
 }
