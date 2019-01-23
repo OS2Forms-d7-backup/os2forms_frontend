@@ -72,6 +72,49 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
   //adding bodyText
   bellcom_webform_sbsys_settings_add_field($form, 'bodyText', $default, $components_options, 'textarea');
 
+  $form['email'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('E-mail settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#states' => array(
+      'visible' => array(
+        'input[name="enabled"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+ $send_mail = array();
+  if ( !empty($node->webform['email']) ) {
+    $send_mail['email'] = $node->webform['email'];
+  }
+
+  if (is_array($node->webform['emails'])) {
+    foreach ($node->webform['emails'] as $eid => $email) {
+      $email_addresses = array_filter(explode(',', check_plain($email['email'])));
+      foreach ($email_addresses as $key => $email_address) {
+        $email_addresses[$key] = webform_format_email_address($email_address, NULL, $node, NULL, FALSE);
+      }
+
+      $send_mail[$eid] = implode(', ', $email_addresses);
+    }
+  }
+  if ( count($send_mail) ) {
+    if (isset($default['no_send_sbsys_email_addr'])) {
+      $def = $default['no_send_sbsys_email_addr'];
+    }
+    if (!isset($def) || !is_array($def) ) {
+      $def = array();
+    }
+
+    $form['email']['no_send_sbsys_email_addr'] = array(
+      '#title' => t("Do not send SBSYS file"),
+      '#type' => 'checkboxes',
+      '#options' => $send_mail,
+      '#default_value' => $def,
+      '#description' => t("SBSYS XML file will NOT be attached to the e-mail sent to the following recipients."),
+    );
+  }
+
   $form['fields']['MaaSendesTilDFF'] = array(
     '#type' => 'select',
     '#title' => t('@field_name value', array('@field_name' => 'MaaSendesTilDFF')),
@@ -79,6 +122,7 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
     '#default_value' => $default['MaaSendesTilDFF'],
     '#description' => t('Select a value from form submitted fields or provide a custom static value'),
   );
+
 
   $form['nid'] = array(
     '#type' => 'value',
