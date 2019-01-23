@@ -15,6 +15,7 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
   }
   $components_options['custom'] = t('Custom text') . '...';
 
+  $nemid_field_components_options =  array_merge(array('default_nemid_value' => t('Get value from nemid')), $components_options);
   $default = bellcom_webform_get_setting($node->nid);
 
   if (!$default) {
@@ -58,10 +59,18 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
   bellcom_webform_sbsys_settings_add_field($form, 'kle', $default, $components_options);
   //adding sagSkabelonId
   bellcom_webform_sbsys_settings_add_field($form, 'sagSkabelonId', $default, $components_options);
+   //adding nemid_cpr
+  bellcom_webform_sbsys_settings_add_field($form, 'nemid_cpr', $default, $nemid_field_components_options, 'nemid_field');
+  //adding nemid_name
+  bellcom_webform_sbsys_settings_add_field($form, 'nemid_name', $default, $nemid_field_components_options, 'nemid_field');
+  //adding nemid_address
+  bellcom_webform_sbsys_settings_add_field($form, 'nemid_address', $default, $nemid_field_components_options, 'nemid_field');
+  //adding nemid_zipcode
+  bellcom_webform_sbsys_settings_add_field($form, 'nemid_zipcode', $default, $nemid_field_components_options, 'nemid_field');
+  //adding nemid_city
+  bellcom_webform_sbsys_settings_add_field($form, 'nemid_city', $default, $nemid_field_components_options, 'nemid_field');
   //adding bodyText
   bellcom_webform_sbsys_settings_add_field($form, 'bodyText', $default, $components_options, 'textarea');
-
-
 
   $form['email'] = array(
     '#type' => 'fieldset',
@@ -105,6 +114,16 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
       '#description' => t("SBSYS XML file will NOT be attached to the e-mail sent to the following recipients."),
     );
   }
+
+  $form['fields']['MaaSendesTilDFF'] = array(
+    '#type' => 'select',
+    '#title' => t('@field_name value', array('@field_name' => 'MaaSendesTilDFF')),
+    '#options' => array('ja' => 'Ja', 'nej' => 'Nej'),
+    '#default_value' => $default['MaaSendesTilDFF'],
+    '#description' => t('Select a value from form submitted fields or provide a custom static value'),
+  );
+
+
   $form['nid'] = array(
     '#type' => 'value',
     '#value' => $node->nid,
@@ -142,7 +161,10 @@ function bellcom_webform_sbsys_settings_add_field(&$form, $field_name, $default,
     '#default_value' => $default[$field_name],
     '#description' => t('Select a value from form submitted fields or provide a custom static value'),
   );
-  if ($field_type == 'textfield') {
+  if ($field_type == 'nemid_field' && empty($default[$field_name])) {
+     $form['fields'][$field_name]['#default_value'] = 'default_nemid_value';
+  }
+  if ($field_type == 'textfield' || $field_type == 'nemid_field') {
     $form['fields'][$field_name . '_custom'] = array(
       '#type' => 'textfield',
       '#title' => t('@field_name custom text', array('@field_name' => $field_name)),
@@ -251,6 +273,9 @@ function bellcom_webform_get_setting($nid) {
  * @return mixed
  */
 function bellcom_webform_get_setting_value($name, $config, $params) {
+  if ($config[$name] == 'default_nemid_value') {
+    return 'default_nemid_value';
+  }
   if ($config[$name] != 'custom') {
     return htmlspecialchars(bellcom_webform_module_sbsys_xml_get_value_by_form_key($config[$name], $params));
   }
