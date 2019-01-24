@@ -53,7 +53,7 @@ function bellcom_webform_address_autocomplete_property_mode_form(&$form_state, $
     '#type' => 'radios',
     '#title' => t('Autocomplete mode'),
     '#required' => TRUE,
-    '#default_value' => $element['#mode'],
+    '#default_value' => ($element['#mode']) ? $element['#mode'] : 'address',
     '#options' => array(
       'address' => t('Adresse'),
       'block' => t('Ejerlav'),
