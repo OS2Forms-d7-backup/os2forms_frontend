@@ -22,7 +22,7 @@ function _webform_defaults_address_autocomp() {
 function _webform_edit_address_autocomp($component) {
   $form = _webform_edit_textfield($component);
 
-  $form['extra']['mode'] = array(
+  $form['display']['mode'] = array(
     '#type' => 'radios',
     '#title' => t('Autocomplete mode'),
     '#required' => TRUE,
@@ -32,6 +32,7 @@ function _webform_edit_address_autocomp($component) {
       'block' => t('Ejerlav'),
       'matrikula' => t('Jordstykker'),
     ),
+    '#parents' => array('extra', 'mode'),
   );
 
   return $form;
@@ -94,3 +95,37 @@ function _webform_csv_headers_address_autocomp($component, $export_options) {
 function _webform_csv_data_address_autocomp($component, $export_options, $value) {
   return _webform_csv_data_textfield($component, $export_options, $value);
 }
+
+/**
+ * Implements _form_builder_webform_form_builder_types_component().
+ */
+function _form_builder_webform_form_builder_types_address_autocomp() {
+  $fields = array();
+
+  $fields['address_autocomp'] = array(
+    'title' => t('Address autocomplete'),
+    'weight' => -20,
+  );
+  $component['name'] = t('New address');
+  $fields['address_autocomp']['default'] = _form_builder_webform_default('address_autocomp', array(), $component);
+
+  return $fields;
+}
+
+/**
+ * Implements _form_builder_webform_form_builder_map_component().
+ */
+function _form_builder_webform_form_builder_map_address_autocomp() {
+  $mapping = _form_builder_webform_form_builder_map_textfield();
+  $mapping['form_builder_type'] = 'address_autocomp';
+
+  return $mapping;
+}
+
+/**
+ * Implements _form_builder_webform_form_builder_properties_component().
+ */
+function _form_builder_webform_form_builder_properties_address_autocomp() {
+  return _form_builder_webform_form_builder_properties_textfield();
+}
+
