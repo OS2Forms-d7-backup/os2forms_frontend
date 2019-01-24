@@ -67,6 +67,10 @@ function bellcom_webform_generate_doc_create_file($webform, $submission) {
   $section = $phpWord->addSection();
 
   $template = _webform2pdf_get_template($webform->nid);
+  if (empty($template['p_body']['value'])) {
+    $template = variable_get('webform2pdf_default', '');
+  }
+
   $text = webform_replace_tokens($template['p_body']['value'], $webform, $submission);
   $text_parts = explode("\n", strip_tags($text));
 
