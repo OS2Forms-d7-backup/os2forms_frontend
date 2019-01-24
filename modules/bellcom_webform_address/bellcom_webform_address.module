@@ -63,3 +63,21 @@ function bellcom_webform_address_autocomplete($mode, $string) {
   // Return the matches in json format, and stop the page execution.
   drupal_json_output($matches);
 }
+
+/**
+ * Implementation of hook_form_builder_properties().
+ */
+function bellcom_webform_address_form_builder_properties($form_type) {
+  module_load_include('inc', 'form_builder', 'includes/form_builder.properties');
+
+  $properties = array(
+    'mode' => array(
+      'form' => 'bellcom_webform_address_autocomplete_property_mode_form',
+    ),
+  );
+
+  if ($form_type == 'webform') {
+    $properties['options']['class'] = 'FormBuilderWebformPropertyOptions';
+  }
+  return $properties;
+}

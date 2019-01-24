@@ -18,11 +18,13 @@ function _webform_defaults_address_autocomp() {
 
 /**
  * Implements _webform_edit_component().
+ *
+ * Used in on component edit page.
  */
 function _webform_edit_address_autocomp($component) {
   $form = _webform_edit_textfield($component);
 
-  $form['display']['mode'] = array(
+  $form['mode'] = array(
     '#type' => 'radios',
     '#title' => t('Autocomplete mode'),
     '#required' => TRUE,
@@ -33,6 +35,31 @@ function _webform_edit_address_autocomp($component) {
       'matrikula' => t('Jordstykker'),
     ),
     '#parents' => array('extra', 'mode'),
+  );
+
+  return $form;
+}
+
+/**
+ * Configuration form for the "mode" property.
+ *
+ * Used in form_builder.
+ */
+function bellcom_webform_address_autocomplete_property_mode_form(&$form_state, $form_type, $element, $property) {
+  $form = array();
+
+  $form['mode'] = array(
+    '#form_builder' => array('property_group' => 'options'),
+    '#type' => 'radios',
+    '#title' => t('Autocomplete mode'),
+    '#required' => TRUE,
+    '#default_value' => $element['#mode'],
+    '#options' => array(
+      'address' => t('Adresse'),
+      'block' => t('Ejerlav'),
+      'matrikula' => t('Jordstykker'),
+    ),
+    '#weight' => 2,
   );
 
   return $form;
@@ -109,6 +136,7 @@ function _form_builder_webform_form_builder_types_address_autocomp() {
   $component['name'] = t('New address');
   $fields['address_autocomp']['default'] = _form_builder_webform_default('address_autocomp', array(), $component);
 
+
   return $fields;
 }
 
@@ -118,6 +146,9 @@ function _form_builder_webform_form_builder_types_address_autocomp() {
 function _form_builder_webform_form_builder_map_address_autocomp() {
   $mapping = _form_builder_webform_form_builder_map_textfield();
   $mapping['form_builder_type'] = 'address_autocomp';
+  $mapping['properties']['mode'] = array(
+    'storage_parents' => array('extra', 'mode'),
+  );
 
   return $mapping;
 }
