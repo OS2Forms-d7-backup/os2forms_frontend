@@ -77,6 +77,7 @@ function _webform_render_address_autocomp($component, $value = NULL, $filter = T
   }
 
   $element['#autocomplete_path'] = "bellcom_webform_address_autocomplete/$mode";
+  $element['#element_validate'] = array('bellcom_webform_address_address_autocomplete_validate');
 
   return $element;
 }
@@ -121,6 +122,40 @@ function _webform_csv_headers_address_autocomp($component, $export_options) {
  */
 function _webform_csv_data_address_autocomp($component, $export_options, $value) {
   return _webform_csv_data_textfield($component, $export_options, $value);
+}
+
+/**
+ * A Drupal Form API Validation function.
+ *
+ * Validates the entered value against the values returned by webservice.
+ *
+ * @param array $element
+ *   The form element.
+ * @param array $form_state
+ *   The full form state for the webform.
+ */
+function bellcom_webform_address_address_autocomplete_validate($element, &$form_state) {
+  // Trim spaces for basic cleanup.
+  $value = trim($element['#value']);
+  form_set_value($element, $value, $form_state);
+
+  if ($value != '') {
+    $mode = $element['#webform_component']['extra']['mode'];
+
+    $search_value = $value;
+
+    // Special validation for 'block' mode.
+    if ($mode === 'block') {
+      // Making a search value from e.g. '1070455 Testrup, Kattrup' to be
+      // 'Testrup, Kattrup', because the webservice is not capable of searching,
+      // when code is present in the search string.
+      $search_value = preg_replace('/^\d* /', '', $value);
+    }
+
+    if (!in_array($value, bellcom_webform_address_perform_request($mode, $search_value))) {
+      form_error($element, t('!name field value "!value" cannot be validated against address autocomplete.', array('!name' => $element['#title'], '!value' => $value)));
+    }
+  }
 }
 
 /**

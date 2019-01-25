@@ -36,6 +36,24 @@ function bellcom_webform_address_menu() {
  *   The textfield input we're sending to the API.
  */
 function bellcom_webform_address_autocomplete($mode, $string) {
+  $matches = bellcom_webform_address_perform_request($mode, $string);
+
+  // Return the matches in json format, and stop the page execution.
+  drupal_json_output($matches);
+}
+
+/**
+ * Performs an actual request to the webservices.
+ *
+ * @param string $mode
+ *   The field configuration of what needs to be returned as a suggestion.
+ * @param string $string
+ *   The textfield input we're sending to the API
+ *
+ * @return array
+ *   Array of found suggestions.
+ */
+function bellcom_webform_address_perform_request($mode, $string) {
   $matches = array();
 
   if ($string) {
@@ -60,8 +78,7 @@ function bellcom_webform_address_autocomplete($mode, $string) {
     }
   }
 
-  // Return the matches in json format, and stop the page execution.
-  drupal_json_output($matches);
+  return $matches;
 }
 
 /**
