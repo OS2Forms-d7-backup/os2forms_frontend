@@ -153,7 +153,7 @@ function bellcom_webform_address_address_autocomplete_validate($element, &$form_
     }
 
     if (!in_array($value, bellcom_webform_address_perform_request($mode, $search_value))) {
-      form_error($element, t('!name field value "!value" cannot be validated against address autocomplete.', array('!name' => $element['#title'], '!value' => $value)));
+      form_error($element, t('!name: "!value" has been changed. Only values from list are allowed.', array('!name' => $element['#title'], '!value' => $value)));
     }
   }
 }
