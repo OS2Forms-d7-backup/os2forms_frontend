@@ -12,7 +12,7 @@ module_load_include('inc', 'webform', 'components/textfield');
  */
 function _webform_defaults_address_autocomp() {
   $defaults = _webform_defaults_textfield();
-  $defaults['extra']['mode'] = '';
+  $defaults['extra']['mode'] = 'address';
   return $defaults;
 }
 
@@ -49,6 +49,23 @@ function _webform_edit_address_autocomp($component) {
     ),
   );
 
+  $form['remove_code'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Remove code'),
+    '#default_value' => ($component['extra']['remove_code']) ? $component['extra']['remove_code'] : FALSE,
+    '#parents' => array('extra', 'remove_code'),
+    '#states' => array(
+      'visible' => array(
+        array(
+          ':input[name="extra[mode]"]' => array('value' => 'block'),
+        ),
+        array(
+          ':input[name="extra[mode]"]' => array('value' => 'matrikula'),
+        )
+      ),
+    ),
+  );
+
   return $form;
 }
 
@@ -74,6 +91,17 @@ function bellcom_webform_address_autocomplete_property_mode_form(&$form_state, $
     '#weight' => 2,
   );
 
+  return $form;
+}
+
+/**
+ * Configuration form for the "remove_place_name" property.
+ *
+ * Used in form_builder.
+ */
+function bellcom_webform_address_autocomplete_property_remove_place_name_form(&$form_state, $form_type, $element, $property) {
+  $form = array();
+
   $form['remove_place_name'] = array(
     '#form_builder' => array('property_group' => 'options'),
     '#type' => 'checkbox',
@@ -91,6 +119,35 @@ function bellcom_webform_address_autocomplete_property_mode_form(&$form_state, $
 }
 
 /**
+ * Configuration form for the "remove_code" property.
+ *
+ * Used in form_builder.
+ */
+function bellcom_webform_address_autocomplete_property_remove_code_form(&$form_state, $form_type, $element, $property) {
+  $form = array();
+
+  $form['remove_code'] = array(
+    '#form_builder' => array('property_group' => 'options'),
+    '#type' => 'checkbox',
+    '#title' => t('Remove code'),
+    '#default_value' => ($element['#remove_code']) ? $element['#remove_code'] : FALSE,
+    '#states' => array(
+      'visible' => array(
+        array(
+          ':input[name="mode"]' => array('value' => 'block'),
+        ),
+        array(
+          ':input[name="mode"]' => array('value' => 'matrikula'),
+        )
+      ),
+    ),
+    '#weight' => 3,
+  );
+
+  return $form;
+}
+
+/**
  * Implements _webform_render_component().
  */
 function _webform_render_address_autocomp($component, $value = NULL, $filter = TRUE, $submission = NULL) {
@@ -98,10 +155,12 @@ function _webform_render_address_autocomp($component, $value = NULL, $filter = T
 
   $mode = $component['extra']['mode'];
   $remove_place_name = $component['extra']['remove_place_name'];
+  $remove_code = $component['extra']['remove_code'];
 
   $params = array(
     'mode' => ($mode) ? $mode : 'address',
-    'remove_place_name' => $remove_place_name
+    'remove_place_name' => $remove_place_name,
+    'remove_code' => $remove_code,
   );
 
   $element['#autocomplete_path'] = "bellcom_webform_address_autocomplete/" . http_build_query($params);
@@ -171,6 +230,7 @@ function bellcom_webform_address_address_autocomplete_validate($element, &$form_
     $params = array(
       'mode' => $element['#webform_component']['extra']['mode'],
       'remove_place_name' => $element['#webform_component']['extra']['remove_place_name'],
+      'remove_code' => $element['#webform_component']['extra']['remove_code'],
     );
 
     $search_value = $value;
@@ -202,7 +262,6 @@ function _form_builder_webform_form_builder_types_address_autocomp() {
   $component['name'] = t('New address');
   $fields['address_autocomp']['default'] = _form_builder_webform_default('address_autocomp', array(), $component);
 
-
   return $fields;
 }
 
@@ -214,6 +273,12 @@ function _form_builder_webform_form_builder_map_address_autocomp() {
   $mapping['form_builder_type'] = 'address_autocomp';
   $mapping['properties']['mode'] = array(
     'storage_parents' => array('extra', 'mode'),
+  );
+  $mapping['properties']['remove_place_name'] = array(
+    'storage_parents' => array('extra', 'remove_place_name'),
+  );
+  $mapping['properties']['remove_code'] = array(
+    'storage_parents' => array('extra', 'remove_code'),
   );
 
   return $mapping;

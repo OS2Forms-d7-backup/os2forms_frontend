@@ -75,6 +75,7 @@ function bellcom_webform_address_perform_request($params, $string) {
 
     $json_decoded = json_decode($json, true);
     if (is_array($json_decoded)) {
+      // Mode = address and remove_place_name = TRUE
       if ($params['mode'] == 'address' && $params['remove_place_name']) {
         foreach ($json_decoded as $entry) {
           $supplerendebynavn = $entry['adresse']['supplerendebynavn'];
@@ -86,7 +87,32 @@ function bellcom_webform_address_perform_request($params, $string) {
 
           $matches[$text] = $text;
         }
+      // Mode = block and remove_code = TRUE
+      } elseif ($params['mode'] == 'block' && $params['remove_code']) {
+        foreach ($json_decoded as $entry) {
+          $code = $entry['ejerlav']['kode'];
+
+          $text = $entry['tekst'];
+          if (!empty($code)) {
+            $text = preg_replace("/$code /", '', $text);
+          }
+
+          $matches[$text] = $text;
+        }
+      // Mode = matrikula and remove_code = TRUE
+      } elseif ($params['mode'] == 'matrikula' && $params['remove_code']) {
+        foreach ($json_decoded as $entry) {
+          $code = $entry['jordstykke']['ejerlav']['kode'];
+
+          $text = $entry['tekst'];
+          if (!empty($code)) {
+            $text = preg_replace("/ \($code\)/", '', $text);
+          }
+
+          $matches[$text] = $text;
+        }
       }
+      // Default output
       else {
         $matches = array_column($json_decoded, 'tekst', 'tekst');
       }
@@ -105,6 +131,12 @@ function bellcom_webform_address_form_builder_properties($form_type) {
   $properties = array(
     'mode' => array(
       'form' => 'bellcom_webform_address_autocomplete_property_mode_form',
+    ),
+    'remove_place_name' => array(
+      'form' => 'bellcom_webform_address_autocomplete_property_remove_place_name_form',
+    ),
+    'remove_code' => array(
+      'form' => 'bellcom_webform_address_autocomplete_property_remove_code_form',
     ),
   );
 
