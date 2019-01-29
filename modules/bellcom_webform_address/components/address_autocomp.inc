@@ -37,6 +37,18 @@ function _webform_edit_address_autocomp($component) {
     '#parents' => array('extra', 'mode'),
   );
 
+  $form['remove_place_name'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Remove place name'),
+    '#default_value' => ($component['extra']['remove_place_name']) ? $component['extra']['remove_place_name'] : FALSE,
+    '#parents' => array('extra', 'remove_place_name'),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="extra[mode]"]' => array('value' => 'address'),
+      ),
+    ),
+  );
+
   return $form;
 }
 
@@ -62,6 +74,19 @@ function bellcom_webform_address_autocomplete_property_mode_form(&$form_state, $
     '#weight' => 2,
   );
 
+  $form['remove_place_name'] = array(
+    '#form_builder' => array('property_group' => 'options'),
+    '#type' => 'checkbox',
+    '#title' => t('Remove place name'),
+    '#default_value' => ($element['#remove_place_name']) ? $element['#remove_place_name'] : FALSE,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="mode"]' => array('value' => 'address'),
+      ),
+    ),
+    '#weight' => 3,
+  );
+
   return $form;
 }
 
@@ -72,11 +97,14 @@ function _webform_render_address_autocomp($component, $value = NULL, $filter = T
   $element = _webform_render_textfield($component, $value, $filter, $submission);
 
   $mode = $component['extra']['mode'];
-  if (!$mode) {
-    $mode = 'address';
-  }
+  $remove_place_name = $component['extra']['remove_place_name'];
 
-  $element['#autocomplete_path'] = "bellcom_webform_address_autocomplete/$mode";
+  $params = array(
+    'mode' => ($mode) ? $mode : 'address',
+    'remove_place_name' => $remove_place_name
+  );
+
+  $element['#autocomplete_path'] = "bellcom_webform_address_autocomplete/" . http_build_query($params);
   $element['#element_validate'] = array('bellcom_webform_address_address_autocomplete_validate');
 
   return $element;
@@ -140,19 +168,22 @@ function bellcom_webform_address_address_autocomplete_validate($element, &$form_
   form_set_value($element, $value, $form_state);
 
   if ($value != '') {
-    $mode = $element['#webform_component']['extra']['mode'];
+    $params = array(
+      'mode' => $element['#webform_component']['extra']['mode'],
+      'remove_place_name' => $element['#webform_component']['extra']['remove_place_name'],
+    );
 
     $search_value = $value;
 
     // Special validation for 'block' mode.
-    if ($mode === 'block') {
+    if ($params['mode'] === 'block') {
       // Making a search value from e.g. '1070455 Testrup, Kattrup' to be
       // 'Testrup, Kattrup', because the webservice is not capable of searching,
       // when code is present in the search string.
       $search_value = preg_replace('/^\d* /', '', $value);
     }
 
-    if (!in_array($value, bellcom_webform_address_perform_request($mode, $search_value))) {
+    if (!in_array($value, bellcom_webform_address_perform_request($params, $search_value))) {
       form_error($element, t('!name: "!value" has been changed. Only values from list are allowed.', array('!name' => $element['#title'], '!value' => $value)));
     }
   }

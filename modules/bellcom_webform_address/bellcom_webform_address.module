@@ -30,13 +30,14 @@ function bellcom_webform_address_menu() {
 /**
  * Menu callback, returns a json string of suggestions from the API.
  *
- * @param string $mode
- *   The field configuration of what needs to be returned as a suggestion.
+ * @param string $params
+ *   The field configuration params of what needs to be returned as a suggestion.
  * @param string $string
  *   The textfield input we're sending to the API.
  */
-function bellcom_webform_address_autocomplete($mode, $string) {
-  $matches = bellcom_webform_address_perform_request($mode, $string);
+function bellcom_webform_address_autocomplete($params, $string) {
+  parse_str($params,$params_arr);
+  $matches = bellcom_webform_address_perform_request($params_arr, $string);
 
   // Return the matches in json format, and stop the page execution.
   drupal_json_output($matches);
@@ -45,20 +46,20 @@ function bellcom_webform_address_autocomplete($mode, $string) {
 /**
  * Performs an actual request to the webservices.
  *
- * @param string $mode
- *   The field configuration of what needs to be returned as a suggestion.
+ * @param mixed $params
+ *   The field configuration params of what needs to be returned as a suggestion.
  * @param string $string
  *   The textfield input we're sending to the API
  *
  * @return array
  *   Array of found suggestions.
  */
-function bellcom_webform_address_perform_request($mode, $string) {
+function bellcom_webform_address_perform_request($params, $string) {
   $matches = array();
 
   if ($string) {
     $json = '';
-    switch ($mode) {
+    switch ($params['mode']) {
       case 'address':
         $json = file_get_contents('https://dawa.aws.dk/adresser/autocomplete?q=' . urlencode($string));
         break;
@@ -74,7 +75,21 @@ function bellcom_webform_address_perform_request($mode, $string) {
 
     $json_decoded = json_decode($json, true);
     if (is_array($json_decoded)) {
-      $matches = array_column($json_decoded, 'tekst', 'tekst');
+      if ($params['mode'] == 'address' && $params['remove_place_name']) {
+        foreach ($json_decoded as $entry) {
+          $supplerendebynavn = $entry['adresse']['supplerendebynavn'];
+
+          $text = $entry['tekst'];
+          if (!empty($supplerendebynavn)) {
+            $text = preg_replace("/$supplerendebynavn,/", '', $text);
+          }
+
+          $matches[$text] = $text;
+        }
+      }
+      else {
+        $matches = array_column($json_decoded, 'tekst', 'tekst');
+      }
     }
   }
 
