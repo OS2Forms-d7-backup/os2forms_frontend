@@ -3,7 +3,7 @@
 /**
  * Implemnts hook_webform_component_info().
  */
-function bellcom_webform_date_popup_webform_component_info() {
+function os2forms_date_popup_webform_component_info() {
   $components = array();
   $components['date_popup'] = array(
     'label' => t('Date popup'),
