@@ -1,0 +1,147 @@
+<?php
+  
+/**
+ * Implements hook_webform_component_info().
+ */
+function os2forms_address_autocomp_webform_component_info() {
+  $components = array();
+  $components['address_autocomp'] = array(
+    'label' => t('Address autocomplete'),
+    'description' => t('Address automcomplete field.'),
+    'file' => 'components/address_autocomp.inc',
+  );
+  return $components;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function os2forms_address_autocomp_menu() {
+  $items['os2forms_address_autocomp_autocomplete/%'] = array(
+    'title' => 'OS2Forms webform address autocomplete',
+    'page callback' => 'os2forms_address_autocomp_autocomplete',
+    'page arguments' => array(1),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Menu callback, returns a json string of suggestions from the API.
+ *
+ * @param string $params
+ *   The field configuration params of what needs to be returned as a suggestion.
+ * @param string $string
+ *   The textfield input we're sending to the API.
+ */
+function os2forms_address_autocomp_autocomplete($params, $string) {
+  parse_str($params,$params_arr);
+  $matches = os2forms_address_autocomp_perform_request($params_arr, $string);
+
+  // Return the matches in json format, and stop the page execution.
+  drupal_json_output($matches);
+}
+
+/**
+ * Performs an actual request to the webservices.
+ *
+ * @param mixed $params
+ *   The field configuration params of what needs to be returned as a suggestion.
+ * @param string $string
+ *   The textfield input we're sending to the API
+ *
+ * @return array
+ *   Array of found suggestions.
+ */
+function os2forms_address_autocomp_perform_request($params, $string) {
+  $matches = array();
+
+  if ($string) {
+    $json = '';
+    switch ($params['mode']) {
+      case 'address':
+        $json = file_get_contents('https://dawa.aws.dk/adresser/autocomplete?q=' . urlencode($string));
+        break;
+
+      case 'block':
+        $json = file_get_contents('https://dawa.aws.dk/ejerlav/autocomplete?q=' . urlencode($string));
+        break;
+
+      case 'matrikula':
+        $json = file_get_contents('https://dawa.aws.dk/jordstykker/autocomplete?q=' . urlencode($string));
+        break;
+    }
+
+    $json_decoded = json_decode($json, true);
+    if (is_array($json_decoded)) {
+      // Mode = address and remove_place_name = TRUE
+      if ($params['mode'] == 'address' && $params['remove_place_name']) {
+        foreach ($json_decoded as $entry) {
+          $supplerendebynavn = $entry['adresse']['supplerendebynavn'];
+
+          $text = $entry['tekst'];
+          if (!empty($supplerendebynavn)) {
+            $text = preg_replace("/$supplerendebynavn,/", '', $text);
+          }
+
+          $matches[$text] = $text;
+        }
+      // Mode = block and remove_code = TRUE
+      } elseif ($params['mode'] == 'block' && $params['remove_code']) {
+        foreach ($json_decoded as $entry) {
+          $code = $entry['ejerlav']['kode'];
+
+          $text = $entry['tekst'];
+          if (!empty($code)) {
+            $text = preg_replace("/$code /", '', $text);
+          }
+
+          $matches[$text] = $text;
+        }
+      // Mode = matrikula and remove_code = TRUE
+      } elseif ($params['mode'] == 'matrikula' && $params['remove_code']) {
+        foreach ($json_decoded as $entry) {
+          $code = $entry['jordstykke']['ejerlav']['kode'];
+
+          $text = $entry['tekst'];
+          if (!empty($code)) {
+            $text = preg_replace("/ \($code\)/", '', $text);
+          }
+
+          $matches[$text] = $text;
+        }
+      }
+      // Default output
+      else {
+        $matches = array_column($json_decoded, 'tekst', 'tekst');
+      }
+    }
+  }
+
+  return $matches;
+}
+
+/**
+ * Implementation of hook_form_builder_properties().
+ */
+function os2forms_address_autocomp_form_builder_properties($form_type) {
+  module_load_include('inc', 'form_builder', 'includes/form_builder.properties');
+
+  $properties = array(
+    'mode' => array(
+      'form' => 'os2forms_address_autocomp_property_mode_form',
+    ),
+    'remove_place_name' => array(
+      'form' => 'os2forms_address_autocomp_property_remove_place_name_form',
+    ),
+    'remove_code' => array(
+      'form' => 'os2forms_address_autocomp_property_remove_code_form',
+    ),
+  );
+
+  if ($form_type == 'webform') {
+    $properties['options']['class'] = 'FormBuilderWebformPropertyOptions';
+  }
+  return $properties;
+}

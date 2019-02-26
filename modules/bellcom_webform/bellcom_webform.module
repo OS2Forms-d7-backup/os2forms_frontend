@@ -1,7 +1,7 @@
 <?php
 module_load_include('inc', 'bellcom_webform', 'includes/bellcom_webform.custom_pdf_name');
 module_load_include('inc', 'bellcom_webform', 'includes/bellcom_webform.xml_generation');
-module_load_include('inc', 'bellcom_webform', 'includes/bellcom_webform.settings');
+module_load_include('inc', 'bellcom_webform', 'includes/bellcom_webform.generate_doc');
 
 /**
  * Implements hook_menu().
@@ -13,9 +13,16 @@ function bellcom_webform_menu() {
     'title' => 'SBSYS XML',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('bellcom_webform_sbsys_settings_form', 1),
-    'access callback' => 'node_access',
-    'access arguments' => array('update', 1),
-    'file' => 'includes/bellcom_webform.settings.inc',
+    'access arguments' => array('edit webform components'),
+    'weight' => 4,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['node/%webform_menu/webform/generate_doc'] = array(
+    'title' => 'Generate DOC',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bellcom_webform_generate_doc_settings_form', 1),
+    'access arguments' => array('edit webform components'),
     'weight' => 4,
     'type' => MENU_LOCAL_TASK,
   );
@@ -62,12 +69,14 @@ function bellcom_webform_mail_alter(&$message) {
   if (($message['id'] == 'webform_submission') && isset($message['params']['node']) && isset($message['params']['submission'])) {
     $node = $message['params']['node'];
     $submission = $message['params']['submission'];
-    $config = bellcom_webform_get_setting($node->nid);
 
-    $filename = 'os2forms.xml';
-    if ($config['enabled']) {
+    $attachments = array();
+
+    // SBSYS Config.
+    $sbsys_config = bellcom_webform_sbsys_get_setting($node->nid);
+    if (isset($sbsys_config['enabled']) && $sbsys_config['enabled']) {
       // Generating submission id.
-      if ($config['anonymize_submission'] && module_exists('os2forms_server_communication')) {
+      if ($sbsys_config['anonymize_submission'] && module_exists('os2forms_server_communication')) {
         $generated_submission_id = os2forms_server_communication_generate_submission_id();
         $submission_id_cid = (string) _os2forms_server_communication_get_cid_by_form_key($node->nid, 'submission_id');
         $message['params']['submission']->data[$submission_id_cid][0] = $generated_submission_id;
@@ -93,43 +102,72 @@ function bellcom_webform_mail_alter(&$message) {
         }
       }
 
-      if ($send_email === FALSE) {
-        return;
+      if ($send_email) {
+        // Creating attachment.
+        $filename = 'os2forms.xml';
+        $attachment = new stdClass;
+        $attachment->filecontent = bellcom_webform_module_sbsys_xml($message['params']);
+        $attachment->filename = $filename;
+        $attachment->filemime = 'text/xml';
+
+        $attachments[] = $attachment;
       }
+
+      // Scheduling submission to be cleared.
+      if ($sbsys_config['anonymize_submission'] && module_exists('os2forms_server_communication')) {
+        os2forms_server_communication_schedule_submission_clearing($node->nid, $submission->sid, $generated_submission_id);
+      }
+    }
+
+    // Generate DOC config.
+    $generate_doc_config = bellcom_webform_generate_doc_get_setting($node->nid);
+    if (isset($generate_doc_config) && $generate_doc_config['enabled']) {
+      // Creating a file in a temporary dir.
+      $file_uri = bellcom_webform_generate_doc_create_file($node, $submission);
+      $file_size = filesize($file_uri);
+      $handle = fopen($file_uri, "rb");
+      $content = fread($handle, $file_size);
+      fclose($handle);
+
+      $attachment = new stdClass;
+      $attachment->filecontent = $content;
+      $attachment->filename = basename($file_uri);
+      $attachment->filemime = mime_content_type($file_uri);
+
+      $attachments[] = $attachment;
+
+      // Deleting the file in the end.
+      file_unmanaged_delete($file_uri);
+    }
+
+    if (!empty($attachments)) {
       $html_capable = variable_get('webform_email_html_capable', FALSE);
 
       if ($html_capable) {
         if (module_exists('mimemail')) {
-          $attachment = new stdClass;
-          $attachment->filecontent = bellcom_webform_module_sbsys_xml($message['params']);
-          $attachment->filename = $filename;
-          $attachment->filemime = 'text/xml';
-          $message['params']['attachments'][] = $attachment;
+          foreach($attachments as $attachment) {
+            $message['params']['attachments'][] = $attachment;
+          }
         }
       }
       else {
-        //find existing trenner
-        preg_match('/\multipart\/mixed;\ boundary=\"(.*)\"/', $message['headers']['Content-Type'], $matches);
-        $trenner = $matches[1];
+        foreach($attachments as $attachment) {
+          //find existing trenner
+          preg_match('/\multipart\/mixed;\ boundary=\"(.*)\"/', $message['headers']['Content-Type'], $matches);
+          $trenner = $matches[1];
 
-        //remove message end
-        $message['body'][0] = str_replace("--$trenner--", '', $message['body'][0]);
+          //remove message end
+          $message['body'][0] = str_replace("--$trenner--", '', $message['body'][0]);
 
-        //and new content
-        $message['body'][0] .= "\n\n--" . $trenner . "\n";
-        $message['body'][0] .= "Content-Type: text/xml; name=\"$filename\"\n";
-        $message['body'][0] .= "Content-Transfer-Encoding: base64\n";
-        $message['body'][0] .= "Content-Disposition: attachment; filename=\"$filename\"\n\n";
-        $message['body'][0] .= chunk_split(base64_encode(
-          bellcom_webform_module_sbsys_xml($message['params'])
-        ));
-        $message['body'][0] .= "\n\n";
-        $message['body'][0] .= "--" . $trenner . "--";
-      }
-
-      // Scheduling submission to be cleared.
-      if ($config['anonymize_submission'] && module_exists('os2forms_server_communication')) {
-        os2forms_server_communication_schedule_submission_clearing($node->nid, $submission->sid, $generated_submission_id);
+          //and new content
+          $message['body'][0] .= "\n\n--" . $trenner . "\n";
+          $message['body'][0] .= "Content-Type: " . $attachment->filemime . "; name=\"" . $attachment->filename . "\"\n";
+          $message['body'][0] .= "Content-Transfer-Encoding: base64\n";
+          $message['body'][0] .= "Content-Disposition: attachment; filename=\"" . $attachment->filename . "\"\n\n";
+          $message['body'][0] .= chunk_split(base64_encode($attachment->filecontent));
+          $message['body'][0] .= "\n\n";
+          $message['body'][0] .= "--" . $trenner . "--";
+        }
       }
     }
   }
@@ -154,5 +192,19 @@ function bellcom_webform_hide_submit_alter(&$hide_submit_settings) {
   //$hide_submit_settings['hide_submit']['hide_submit_status'] = FALSE;
   if (strpos($current_path, 'node/') !== 0) {
     $hide_submit_settings['hide_submit']['hide_submit_status'] = FALSE;
+  }
+}
+function bellcom_webform_webform2pdf_available_fonts_alter(&$font, $region) {
+  if (module_exists('webform2pdf')) {
+    include_once(libraries_get_path('tcpdf') . '/tcpdf.php');
+    $fontfile = TCPDF_FONTS::getFontFullPath('montserrat.php');
+    if (!TCPDF_STATIC::empty_string($fontfile) AND (@file_exists($fontfile))) {
+      $font['montserrat'] = 'Montserrat';
+    }
+    $fontfile = TCPDF_FONTS::getFontFullPath('verdana.php');
+    if (!TCPDF_STATIC::empty_string($fontfile) AND (@file_exists($fontfile))) {
+      $font['verdana'] = 'Verdana';
+    }
+
   }
 }

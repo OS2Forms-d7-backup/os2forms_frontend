@@ -26,6 +26,7 @@ dependencies[] = token
 dependencies[] = uuid
 dependencies[] = variable
 dependencies[] = views
+dependencies[] = vcv_serviceplatformen
 dependencies[] = webform
 dependencies[] = webform_conditional_confirmation
 dependencies[] = webform_custom_buttons

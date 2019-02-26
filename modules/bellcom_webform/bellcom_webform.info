@@ -4,5 +4,7 @@ core = 7.x
 version = 7.x-1.1
 package = Bellcom
 stylesheets[all][] = css/bellcom_webform.css
+dependencies[] = phpword
 dependencies[] = webform
+dependencies[] = webform2pdf
 dependencies[] = vcv_serviceplatformen
