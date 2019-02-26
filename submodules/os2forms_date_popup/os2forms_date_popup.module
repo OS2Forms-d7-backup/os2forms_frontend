@@ -9,7 +9,7 @@ function os2forms_date_popup_webform_component_info() {
     'label' => t('Date popup'),
     'description' => t('Create date popup as alaternative of standard webform date field.'),
     'features' => array(
-      'csv' => FALSE,
+      'csv' => TRUE,
       'email' => TRUE,
       'email_address' => FALSE,
       'email_name' => FALSE,

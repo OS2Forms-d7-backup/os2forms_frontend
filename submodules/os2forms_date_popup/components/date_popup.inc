@@ -91,3 +91,21 @@ function _webform_edit_date_popup($component) {
 
   return $form;
 }
+
+/**
+ * Implements _webform_csv_headers_component().
+ */
+function _webform_csv_headers_date_popup($component, $export_options) {
+  $header = array();
+  $header[0] = '';
+  $header[1] = '';
+  $header[2] = $export_options['header_keys'] ? $component['form_key'] : $component['name'];
+  return $header;
+}
+
+/**
+ * Implements _webform_csv_data_component().
+ */
+function _webform_csv_data_date_popup($component, $export_options, $value) {
+  return !isset($value[0]) ? '' : $value[0];
+}
