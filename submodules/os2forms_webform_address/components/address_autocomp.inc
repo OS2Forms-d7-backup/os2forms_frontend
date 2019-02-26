@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Bellcom webform address autocomplete component.
+ * OS2Forms webform address autocomplete component.
  */
 
 module_load_include('inc', 'webform', 'components/textfield');
@@ -74,7 +74,7 @@ function _webform_edit_address_autocomp($component) {
  *
  * Used in form_builder.
  */
-function bellcom_webform_address_autocomplete_property_mode_form(&$form_state, $form_type, $element, $property) {
+function os2forms_webform_address_autocomplete_property_mode_form(&$form_state, $form_type, $element, $property) {
   $form = array();
 
   $form['mode'] = array(
@@ -99,7 +99,7 @@ function bellcom_webform_address_autocomplete_property_mode_form(&$form_state, $
  *
  * Used in form_builder.
  */
-function bellcom_webform_address_autocomplete_property_remove_place_name_form(&$form_state, $form_type, $element, $property) {
+function os2forms_webform_address_autocomplete_property_remove_place_name_form(&$form_state, $form_type, $element, $property) {
   $form = array();
 
   $form['remove_place_name'] = array(
@@ -123,7 +123,7 @@ function bellcom_webform_address_autocomplete_property_remove_place_name_form(&$
  *
  * Used in form_builder.
  */
-function bellcom_webform_address_autocomplete_property_remove_code_form(&$form_state, $form_type, $element, $property) {
+function os2forms_webform_address_autocomplete_property_remove_code_form(&$form_state, $form_type, $element, $property) {
   $form = array();
 
   $form['remove_code'] = array(
@@ -163,8 +163,8 @@ function _webform_render_address_autocomp($component, $value = NULL, $filter = T
     'remove_code' => $remove_code,
   );
 
-  $element['#autocomplete_path'] = "bellcom_webform_address_autocomplete/" . http_build_query($params);
-  $element['#element_validate'] = array('bellcom_webform_address_address_autocomplete_validate');
+  $element['#autocomplete_path'] = "os2forms_webform_address_autocomplete/" . http_build_query($params);
+  $element['#element_validate'] = array('os2forms_webform_address_address_autocomplete_validate');
 
   return $element;
 }
@@ -221,7 +221,7 @@ function _webform_csv_data_address_autocomp($component, $export_options, $value)
  * @param array $form_state
  *   The full form state for the webform.
  */
-function bellcom_webform_address_address_autocomplete_validate($element, &$form_state) {
+function os2forms_webform_address_address_autocomplete_validate($element, &$form_state) {
   // Trim spaces for basic cleanup.
   $value = trim($element['#value']);
   form_set_value($element, $value, $form_state);
@@ -243,7 +243,7 @@ function bellcom_webform_address_address_autocomplete_validate($element, &$form_
       $search_value = preg_replace('/^\d* /', '', $value);
     }
 
-    if (!in_array($value, bellcom_webform_address_perform_request($params, $search_value))) {
+    if (!in_array($value, os2forms_webform_address_perform_request($params, $search_value))) {
       form_error($element, t('!name: "!value" has been changed. Only values from list are allowed.', array('!name' => $element['#title'], '!value' => $value)));
     }
   }

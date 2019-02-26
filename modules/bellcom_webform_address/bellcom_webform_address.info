@@ -1,4 +1,0 @@
-name = Bellcom Webform Address field
-description = Address autocomplete field for Webforms
-core = 7.x
-package = Bellcom

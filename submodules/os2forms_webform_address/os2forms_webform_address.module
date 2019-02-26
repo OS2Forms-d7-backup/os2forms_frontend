@@ -1,9 +1,9 @@
 <?php
   
 /**
- * Implemnts hook_webform_component_info().
+ * Implements hook_webform_component_info().
  */
-function bellcom_webform_address_webform_component_info() {
+function os2forms_webform_address_webform_component_info() {
   $components = array();
   $components['address_autocomp'] = array(
     'label' => t('Address autocomplete'),
@@ -16,10 +16,10 @@ function bellcom_webform_address_webform_component_info() {
 /**
  * Implements hook_menu().
  */
-function bellcom_webform_address_menu() {
-  $items['bellcom_webform_address_autocomplete/%'] = array(
-    'title' => 'Bellcom webform address autocomplete',
-    'page callback' => 'bellcom_webform_address_autocomplete',
+function os2forms_webform_address_menu() {
+  $items['os2forms_webform_address_autocomplete/%'] = array(
+    'title' => 'OS2Forms webform address autocomplete',
+    'page callback' => 'os2forms_webform_address_autocomplete',
     'page arguments' => array(1),
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
@@ -35,9 +35,9 @@ function bellcom_webform_address_menu() {
  * @param string $string
  *   The textfield input we're sending to the API.
  */
-function bellcom_webform_address_autocomplete($params, $string) {
+function os2forms_webform_address_autocomplete($params, $string) {
   parse_str($params,$params_arr);
-  $matches = bellcom_webform_address_perform_request($params_arr, $string);
+  $matches = os2forms_webform_address_perform_request($params_arr, $string);
 
   // Return the matches in json format, and stop the page execution.
   drupal_json_output($matches);
@@ -54,7 +54,7 @@ function bellcom_webform_address_autocomplete($params, $string) {
  * @return array
  *   Array of found suggestions.
  */
-function bellcom_webform_address_perform_request($params, $string) {
+function os2forms_webform_address_perform_request($params, $string) {
   $matches = array();
 
   if ($string) {
@@ -125,18 +125,18 @@ function bellcom_webform_address_perform_request($params, $string) {
 /**
  * Implementation of hook_form_builder_properties().
  */
-function bellcom_webform_address_form_builder_properties($form_type) {
+function os2forms_webform_address_form_builder_properties($form_type) {
   module_load_include('inc', 'form_builder', 'includes/form_builder.properties');
 
   $properties = array(
     'mode' => array(
-      'form' => 'bellcom_webform_address_autocomplete_property_mode_form',
+      'form' => 'os2forms_webform_address_autocomplete_property_mode_form',
     ),
     'remove_place_name' => array(
-      'form' => 'bellcom_webform_address_autocomplete_property_remove_place_name_form',
+      'form' => 'os2forms_webform_address_autocomplete_property_remove_place_name_form',
     ),
     'remove_code' => array(
-      'form' => 'bellcom_webform_address_autocomplete_property_remove_code_form',
+      'form' => 'os2forms_webform_address_autocomplete_property_remove_code_form',
     ),
   );
 
