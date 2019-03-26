@@ -58,20 +58,30 @@ function os2forms_address_autocomp_perform_request($params, $string) {
   $matches = array();
 
   if ($string) {
-    $json = '';
+    $request_url = '';
     switch ($params['mode']) {
       case 'address':
-        $json = file_get_contents('https://dawa.aws.dk/adresser/autocomplete?q=' . urlencode($string));
+        $request_url = 'https://dawa.aws.dk/adresser/autocomplete?q=' . urlencode($string);
+        if (!empty($params['limit_by_municipality'])) {
+          $limit_by_municipality_arr = str_getcsv($params['limit_by_municipality']);
+
+          $request_url .= '&kommunekode=' . implode('|', $limit_by_municipality_arr);
+        }
         break;
 
       case 'block':
-        $json = file_get_contents('https://dawa.aws.dk/ejerlav/autocomplete?q=' . urlencode($string));
+        $request_url = 'https://dawa.aws.dk/ejerlav/autocomplete?q=' . urlencode($string);
         break;
 
       case 'matrikula':
-        $json = file_get_contents('https://dawa.aws.dk/jordstykker/autocomplete?q=' . urlencode($string));
+        $request_url = 'https://dawa.aws.dk/jordstykker/autocomplete?q=' . urlencode($string);
+        if (!empty($params['limit_by_municipality'])) {
+          $request_url .= '&kommunekode=' . $params['limit_by_municipality'];
+        }
         break;
     }
+
+    $json = file_get_contents($request_url);
 
     $json_decoded = json_decode($json, true);
     if (is_array($json_decoded)) {
@@ -134,6 +144,9 @@ function os2forms_address_autocomp_form_builder_properties($form_type) {
     ),
     'remove_place_name' => array(
       'form' => 'os2forms_address_autocomp_property_remove_place_name_form',
+    ),
+    'limit_by_municipality' => array(
+      'form' => 'os2forms_address_autocomp_property_limit_by_municipality_form',
     ),
     'remove_code' => array(
       'form' => 'os2forms_address_autocomp_property_remove_code_form',
