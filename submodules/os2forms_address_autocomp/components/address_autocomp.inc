@@ -49,6 +49,24 @@ function _webform_edit_address_autocomp($component) {
     ),
   );
 
+  $form['limit_by_municipality'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Limit by municipality (-es)'),
+    '#default_value' => ($component['extra']['limit_by_municipality']) ? $component['extra']['limit_by_municipality'] : FALSE,
+    '#parents' => array('extra', 'limit_by_municipality'),
+    '#states' => array(
+      'visible' => array(
+        array(
+          ':input[name="extra[mode]"]' => array('value' => 'address'),
+        ),
+        array(
+          ':input[name="extra[mode]"]' => array('value' => 'matrikula'),
+        )
+      ),
+    ),
+    '#description' => t('CSV list of municipalities codes, what will limit the address lookup.<br/><b>NB!</b> Jordstykker does not support multiple values'),
+  );
+
   $form['remove_code'] = array(
     '#type' => 'checkbox',
     '#title' => t('Remove code'),
@@ -66,7 +84,35 @@ function _webform_edit_address_autocomp($component) {
     ),
   );
 
+  $form['#validate'][] = '_webform_edit_address_autocomp_form_validate';
+
   return $form;
+}
+
+/**
+ * Form _webform_edit_address_autocomp validate.
+ */
+function _webform_edit_address_autocomp_form_validate($form, &$form_state) {
+  $mode = $form_state['values']['extra']['mode'];
+  $limit_by_municipality = $form_state['values']['extra']['limit_by_municipality'];
+
+  if (!empty($limit_by_municipality)) {
+    switch ($mode) {
+      case 'address':
+        // Allowing CSV list.
+        if (!preg_match('/^(\d+,?)*$/s', $limit_by_municipality)) {
+          form_set_error('extra][limit_by_municipality', 'Must be list of integers separated by coma (CSV)');
+        }
+        break;
+
+      case 'matrikula':
+        // Allowing single int value.
+        if (!preg_match('/^\d+$/s', $limit_by_municipality)) {
+          form_set_error('extra][limit_by_municipality', 'Must be a single integer');
+        }
+        break;
+    }
+  }
 }
 
 /**
@@ -119,6 +165,64 @@ function os2forms_address_autocomp_property_remove_place_name_form(&$form_state,
 }
 
 /**
+ * Configuration form for the "limit_by_municipality" property.
+ *
+ * Used in form_builder.
+ */
+function os2forms_address_autocomp_property_limit_by_municipality_form(&$form_state, $form_type, $element, $property) {
+  $form = array();
+
+  $form['limit_by_municipality'] = array(
+    '#form_builder' => array('property_group' => 'options'),
+    '#type' => 'textfield',
+    '#title' => t('Limit by municipality (-es)'),
+    '#default_value' => ($element['#limit_by_municipality']) ? $element['#limit_by_municipality'] : '',
+    '#states' => array(
+      'visible' => array(
+        array(
+          ':input[name="mode"]' => array('value' => 'address'),
+        ),
+        array(
+          ':input[name="mode"]' => array('value' => 'matrikula'),
+        )
+      ),
+    ),
+    '#description' => t('CSV list of municipalities codes, what will limit the address lookup.<br/><b>NB!</b> Jordstykker does not support multiple values'),
+    '#weight' => 3,
+  );
+
+  $form['#validate'][] = 'os2forms_address_autocomp_property_limit_by_municipality_form_validate';
+
+  return $form;
+}
+
+/**
+ * Form os2forms_address_autocomp_property_limit_by_municipality_form validate.
+ */
+function os2forms_address_autocomp_property_limit_by_municipality_form_validate($form, &$form_state) {
+  $mode = $form_state['values']['mode'];
+  $limit_by_municipality = $form_state['values']['limit_by_municipality'];
+
+  if (!empty($limit_by_municipality)) {
+    switch ($mode) {
+      case 'address':
+        // Allowing CSV list.
+        if (!preg_match('/^(\d+,?)*$/s', $limit_by_municipality)) {
+          form_set_error('limit_by_municipality', 'Must be list of integers separated by coma (CSV)');
+        }
+        break;
+
+      case 'matrikula':
+        // Allowing single int value.
+        if (!preg_match('/^\d+$/s', $limit_by_municipality)) {
+          form_set_error('limit_by_municipality', 'Must be a single integer');
+        }
+        break;
+    }
+  }
+}
+
+/**
  * Configuration form for the "remove_code" property.
  *
  * Used in form_builder.
@@ -155,11 +259,13 @@ function _webform_render_address_autocomp($component, $value = NULL, $filter = T
 
   $mode = $component['extra']['mode'];
   $remove_place_name = $component['extra']['remove_place_name'];
+  $limit_by_municipality = $component['extra']['limit_by_municipality'];
   $remove_code = $component['extra']['remove_code'];
 
   $params = array(
     'mode' => ($mode) ? $mode : 'address',
     'remove_place_name' => $remove_place_name,
+    'limit_by_municipality' => $limit_by_municipality,
     'remove_code' => $remove_code,
   );
 
@@ -230,6 +336,7 @@ function os2forms_address_autocomp_address_autocomplete_validate($element, &$for
     $params = array(
       'mode' => $element['#webform_component']['extra']['mode'],
       'remove_place_name' => $element['#webform_component']['extra']['remove_place_name'],
+      'limit_by_municipality' => $element['#webform_component']['extra']['limit_by_municipality'],
       'remove_code' => $element['#webform_component']['extra']['remove_code'],
     );
 
@@ -276,6 +383,9 @@ function _form_builder_webform_form_builder_map_address_autocomp() {
   );
   $mapping['properties']['remove_place_name'] = array(
     'storage_parents' => array('extra', 'remove_place_name'),
+  );
+  $mapping['properties']['limit_by_municipality'] = array(
+    'storage_parents' => array('extra', 'limit_by_municipality'),
   );
   $mapping['properties']['remove_code'] = array(
     'storage_parents' => array('extra', 'remove_code'),
