@@ -29,18 +29,16 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
     '#title' => t('Send SBSYS XML'),
   );
 
-  if (module_exists('os2forms_server_communication')) {
-    $form['anonymize_submission'] = array(
-      '#default_value' => isset($default['anonymize_submission']) ? $default['anonymize_submission'] : NULL,
-      '#type' => 'checkbox',
-      '#title' => t('Anonymize submission on XML sending'),
-      '#states' => array(
-        'visible' => array(
-          'input[name="enabled"]' => array('checked' => TRUE),
-        ),
+  $form['anonymize_submission'] = array(
+    '#default_value' => isset($default['anonymize_submission']) ? $default['anonymize_submission'] : NULL,
+    '#type' => 'checkbox',
+    '#title' => t('Anonymize submission on XML sending'),
+    '#states' => array(
+      'visible' => array(
+        'input[name="enabled"]' => array('checked' => TRUE),
       ),
-    );
-  }
+    ),
+  );
 
   $form['fields'] = array(
     '#type' => 'fieldset',

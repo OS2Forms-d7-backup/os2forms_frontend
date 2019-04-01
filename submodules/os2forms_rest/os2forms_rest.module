@@ -1,0 +1,23 @@
+<?php
+/**
+ * @file
+ * Code for the os2forms_rest feature.
+ */
+
+include_once 'os2forms_rest.features.inc';
+
+/**
+ * Implements hook_services_resources().
+ */
+function os2forms_rest_services_resources() {
+  // Include our resources.
+  require_once "resources/os2forms_rest_submission_resource.inc";
+  require_once "resources/os2forms_rest_webform_resource.inc";
+
+  // Add the resources.
+  $resources = array();
+  $resources += _os2forms_rest_submission_resource_definition();
+  $resources += _os2forms_rest_webform_resource_definition();
+
+  return $resources;
+}

@@ -1,5 +1,6 @@
 <?php
 
+module_load_include('install', 'uuid', 'uuid');
 
 function os2forms_frontend_enable() {
   $feature = features_get_features('os2forms_frontend');
@@ -8,4 +9,47 @@ function os2forms_frontend_enable() {
 
   //making the webforms update work, without this line update fails
   variable_set('services_webform_submit_button_resource_create', t('Save'));
+}
+
+/**
+ * Implements hook_schema().
+ */
+function os2forms_frontend_schema() {
+  $schema['os2forms_frontend_unanonymized_submissions'] = array(
+    'description' => 'Table to list of unanomymized submissions',
+    'fields' => array(
+      'sid' => array(
+        'description' => 'Submission nid',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uuid' => uuid_schema_field_definition(),
+      'webform_nid' => array(
+        'description' => 'Webform nid',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'webform_uuid' => uuid_schema_field_definition(),
+      'synched' => array(
+        'description' => 'Indicates if submission is synched.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('uuid'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Adding the os2forms_frontend_unanonymized_submissions table.
+ */
+function os2forms_frontend_update_7101(&$sandbox) {
+  if (!db_table_exists('os2forms_frontend_unanonymized_submissions')) {
+    db_create_table('os2forms_frontend_unanonymized_submissions', drupal_get_schema_unprocessed('os2forms_frontend', 'os2forms_frontend_unanonymized_submissions'));
+  }
 }

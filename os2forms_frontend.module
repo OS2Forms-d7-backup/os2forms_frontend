@@ -4,10 +4,33 @@
  * Code for the os2forms_frontend feature.
  */
 
-include_once 'os2forms_frontend.features.inc';
+module_load_include('inc', 'os2forms_frontend', 'includes/os2forms_frontend.utils');
 
+/**
+ * Implements hook_cron().
+ */
+function os2forms_frontend_cron() {
+  os2forms_frontend_anonymize_submissions();
+}
+
+/**
+ * Implements hook_webform_component_defaults_alter().
+ *
+ * Changes default file scheme to private.
+ */
 function os2forms_frontend_webform_component_defaults_alter(&$defaults, $type) {
   if ($type == 'file') {
     $defaults['extra']['scheme'] = 'private';
+  }
+}
+
+/*
+ * Job to clear all submissions scheduled to be cleared.
+ */
+function os2forms_frontend_anonymize_submissions() {
+  $unanonymized_submissions = os2forms_frontend_fetch_unanonymized_submissions(1);
+
+  foreach ($unanonymized_submissions as $submission) {
+    os2forms_frontend_anonymize_submission($submission->webform_nid, $submission->sid);
   }
 }

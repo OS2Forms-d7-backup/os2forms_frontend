@@ -76,11 +76,6 @@ function bellcom_webform_mail_alter(&$message) {
     $sbsys_config = bellcom_webform_sbsys_get_setting($node->nid);
     if (isset($sbsys_config['enabled']) && $sbsys_config['enabled']) {
       // Generating submission id.
-      if ($sbsys_config['anonymize_submission'] && module_exists('os2forms_server_communication')) {
-        $generated_submission_id = os2forms_server_communication_generate_submission_id();
-        $submission_id_cid = (string) _os2forms_server_communication_get_cid_by_form_key($node->nid, 'submission_id');
-        $message['params']['submission']->data[$submission_id_cid][0] = $generated_submission_id;
-      }
       $no_send_sbsys_mail = isset($config['no_send_sbsys_email_addr']) ? $config['no_send_sbsys_email_addr'] : FALSE;
       $send_email = TRUE;
       if (is_array($no_send_sbsys_mail)) {
@@ -114,8 +109,11 @@ function bellcom_webform_mail_alter(&$message) {
       }
 
       // Scheduling submission to be cleared.
-      if ($sbsys_config['anonymize_submission'] && module_exists('os2forms_server_communication')) {
-        os2forms_server_communication_schedule_submission_clearing($node->nid, $submission->sid, $generated_submission_id);
+      if ($sbsys_config['anonymize_submission']) {
+        os2forms_frontend_add_unanonymized_submission($submission);
+        // We mark submission as synched right away, otherwise it will not be
+        // cleared.
+        os2forms_frontend_mark_submission_synched($submission->uuid);
       }
     }
 

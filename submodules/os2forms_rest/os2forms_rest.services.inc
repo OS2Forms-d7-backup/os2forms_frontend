@@ -1,14 +1,13 @@
 <?php
-
 /**
  * @file
- * os2forms_frontend.services.inc
+ * os2forms_rest.services.inc
  */
 
 /**
  * Implements hook_default_services_endpoint().
  */
-function os2forms_frontend_default_services_endpoint() {
+function os2forms_rest_default_services_endpoint() {
   $export = array();
 
   $endpoint = new stdClass();
@@ -38,37 +37,26 @@ function os2forms_frontend_default_services_endpoint() {
     ),
   );
   $endpoint->resources = array(
-    'node' => array(
+    'file' => array(
       'operations' => array(
-        'index' => array(
-          'enabled' => '1',
-        ),
-      ),
-      'relationships' => array(
-        'webform_submissions' => array(
+        'retrieve' => array(
           'enabled' => '1',
         ),
       ),
     ),
-    'user' => array(
-      'actions' => array(
-        'login' => array(
+    'os2forms_submission' => array(
+      'operations' => array(
+        'delete' => array(
           'enabled' => '1',
-          'settings' => array(
-            'services' => array(
-              'resource_api_version' => '1.0',
-            ),
-          ),
         ),
-        'logout' => array(
+        'index' => array(
           'enabled' => '1',
-          'settings' => array(
-            'services' => array(
-              'resource_api_version' => '1.0',
-            ),
-          ),
         ),
-        'token' => array(
+      ),
+    ),
+    'os2forms_webform' => array(
+      'operations' => array(
+        'retrieve' => array(
           'enabled' => '1',
         ),
       ),
@@ -76,15 +64,6 @@ function os2forms_frontend_default_services_endpoint() {
     'webform_submission' => array(
       'operations' => array(
         'retrieve' => array(
-          'enabled' => '1',
-        ),
-        'update' => array(
-          'enabled' => '1',
-        ),
-        'delete' => array(
-          'enabled' => '1',
-        ),
-        'index' => array(
           'enabled' => '1',
         ),
       ),
