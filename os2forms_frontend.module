@@ -24,6 +24,15 @@ function os2forms_frontend_webform_component_defaults_alter(&$defaults, $type) {
   }
 }
 
+/**
+ * Implements hook_webform_submission_insert().
+ *
+ * Put submission into a list of unanonymized submissions.
+ */
+function os2forms_frontend_webform_submission_insert($node, $submission) {
+  os2forms_frontend_add_unanonymized_submission($submission);
+}
+
 /*
  * Job to clear all submissions scheduled to be cleared.
  */

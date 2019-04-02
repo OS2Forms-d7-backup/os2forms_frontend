@@ -110,7 +110,6 @@ function bellcom_webform_mail_alter(&$message) {
 
       // Scheduling submission to be cleared.
       if ($sbsys_config['anonymize_submission']) {
-        os2forms_frontend_add_unanonymized_submission($submission);
         // We mark submission as synched right away, otherwise it will not be
         // cleared.
         os2forms_frontend_mark_submission_synched($submission->uuid);
