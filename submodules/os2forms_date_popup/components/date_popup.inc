@@ -21,6 +21,8 @@ function _webform_theme_date_popup() {
 }
 
 function _webform_render_date_popup($component, $value = NULL, $filter = TRUE) {
+  drupal_add_js(drupal_get_path('module', 'os2forms_date_popup') . '/js/bootstrap-datepicker.min.js');
+  drupal_add_js(drupal_get_path('module', 'os2forms_date_popup') . '/js/bootstrap-datepicker.da.min.js');
   if ($component['required'])
     $prefix = '<div class = "datepicker-wrap"><div class="row"><div class="col-sm-6"><div class="form-group form-item"><label for="select-test">' . $component['name'] . '<span class="form-required" title="Dette felt er obligatorisk.">*</span></label><div class="input-group date">';
   else
