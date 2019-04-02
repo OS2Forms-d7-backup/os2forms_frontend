@@ -13,3 +13,4 @@ dependencies[] = services_basic_auth
 features[ctools][] = services:services:3
 features[features_api][] = api:2
 features[services_endpoint][] = rest
+features[user_permission][] = get any binary files
