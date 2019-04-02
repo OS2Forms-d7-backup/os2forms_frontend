@@ -13,6 +13,7 @@ dependencies[] = l10n_update
 dependencies[] = libraries
 dependencies[] = mailsystem
 dependencies[] = mimemail
+dependencies[] = nemid
 dependencies[] = options_element
 dependencies[] = pathauto
 dependencies[] = permissions_per_webform
