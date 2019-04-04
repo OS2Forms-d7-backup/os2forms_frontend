@@ -1,7 +1,0 @@
-name = OS2Forms Date Popup
-description = Missing date popup component for webforms
-core = 7.x
-package = OS2Forms
-stylesheets[all][] = css/bootstrap-datepicker3.min.css
-stylesheets[all][] = css/os2forms_date_popup.css
-scripts[]=  js/init.js
