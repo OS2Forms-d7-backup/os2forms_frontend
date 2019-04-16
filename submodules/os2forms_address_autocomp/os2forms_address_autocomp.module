@@ -10,6 +10,13 @@ function os2forms_address_autocomp_webform_component_info() {
     'description' => t('Address automcomplete field.'),
     'file' => 'components/address_autocomp.inc',
   );
+
+  $components['addrs_autcomp_l'] = array(
+    'label' => t('Address autocomplete linked'),
+    'description' => t('Address automcomplete linked field.'),
+    'file' => 'components/addrs_autcomp_l.inc',
+  );
+
   return $components;
 }
 
@@ -36,6 +43,7 @@ function os2forms_address_autocomp_menu() {
  *   The textfield input we're sending to the API.
  */
 function os2forms_address_autocomp_autocomplete($params, $string) {
+  $params_arr = array();
   parse_str($params,$params_arr);
   $matches = os2forms_address_autocomp_perform_request($params_arr, $string);
 
@@ -48,20 +56,20 @@ function os2forms_address_autocomp_autocomplete($params, $string) {
  *
  * @param mixed $params
  *   The field configuration params of what needs to be returned as a suggestion.
- * @param string $string
+ * @param string $search_string
  *   The textfield input we're sending to the API
  *
  * @return array
  *   Array of found suggestions.
  */
-function os2forms_address_autocomp_perform_request($params, $string) {
+function os2forms_address_autocomp_perform_request($params, $search_string) {
   $matches = array();
 
-  if ($string) {
+  if ($search_string) {
     $request_url = '';
     switch ($params['mode']) {
       case 'address':
-        $request_url = 'https://dawa.aws.dk/adresser/autocomplete?q=' . urlencode($string);
+        $request_url = 'https://dawa.aws.dk/adresser/autocomplete?q=' . urlencode($search_string);
         if (!empty($params['limit_by_municipality'])) {
           $limit_by_municipality_arr = str_getcsv($params['limit_by_municipality']);
 
@@ -70,13 +78,16 @@ function os2forms_address_autocomp_perform_request($params, $string) {
         break;
 
       case 'block':
-        $request_url = 'https://dawa.aws.dk/ejerlav/autocomplete?q=' . urlencode($string);
+        $request_url = 'https://dawa.aws.dk/ejerlav/autocomplete?q=' . urlencode($search_string);
         break;
 
       case 'matrikula':
-        $request_url = 'https://dawa.aws.dk/jordstykker/autocomplete?q=' . urlencode($string);
+        $request_url = 'https://dawa.aws.dk/jordstykker/autocomplete?q=' . urlencode($search_string);
         if (!empty($params['limit_by_municipality'])) {
           $request_url .= '&kommunekode=' . $params['limit_by_municipality'];
+        }
+        if (!empty($params['property_nr'])) {
+          $request_url .= '&esrejendomsnr=' . $params['property_nr'];
         }
         break;
     }
@@ -130,6 +141,88 @@ function os2forms_address_autocomp_perform_request($params, $string) {
   }
 
   return $matches;
+}
+
+/**
+ * Gets the address entity based on the search criteria.
+ *
+ * @param mixed $params
+ *   The field configuration params of what needs to be returned as a suggestion.
+ * @param string $search_string
+ *   The textfield input we're sending to the API
+ *
+ * @return mixed
+ *   Address formed as an array.
+ */
+function os2forms_address_autocomp_fetch_address($params, $search_string) {
+  $address_id = NULL;
+  $address = NULL;
+
+  // Fetching address ID.
+  $request_url = 'https://dawa.aws.dk/adresser/autocomplete?q=' . urlencode($search_string);
+  if (!empty($params['limit_by_municipality'])) {
+    $limit_by_municipality_arr = str_getcsv($params['limit_by_municipality']);
+
+    $request_url .= '&kommunekode=' . implode('|', $limit_by_municipality_arr);
+  }
+
+  $json = file_get_contents($request_url);
+  $json_decoded = json_decode($json, true);
+
+  if (is_array($json_decoded) && !empty($json_decoded)) {
+    $address_id = $json_decoded[0]['adresse']['id'];
+  }
+
+  // Fetching address.
+  if ($address_id) {
+    $request_url = 'https://dawa.aws.dk/adresser/' . $address_id;
+
+    $json = file_get_contents($request_url);
+    $json_decoded = json_decode($json, true);
+
+    if (is_array($json_decoded) && !empty($json_decoded)) {
+      $address = $json_decoded;
+    }
+  }
+
+  return $address;
+}
+
+/**
+ * Fetches the municipality from address entry.
+ *
+ * @param mixed $address
+ *   Address entry.
+ *
+ * @return string
+ *   Municipality code.
+ */
+function os2forms_address_autocomp_address_extract_municipality_code($address) {
+  $municipality_code = NULL;
+  if (is_array($address['adgangsadresse'])) {
+    $municipality_code = $address['adgangsadresse']['kommune']['kode'];
+  }
+
+  return $municipality_code;
+}
+
+/**
+ * Fetches the property number from address entry.
+ *
+ * @param mixed $address
+ *   Address entry.
+ *
+ * @return string
+ *   Property nr.
+ */
+function os2forms_address_autocomp_address_extract_property_nr($address) {
+  $property_nr = NULL;
+
+  if (is_array($address['adgangsadresse'])) {
+    $property_nr = $address['adgangsadresse']['esrejendomsnr'];
+  }
+
+  return $property_nr;
 }
 
 /**

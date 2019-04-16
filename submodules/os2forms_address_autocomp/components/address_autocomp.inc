@@ -400,4 +400,3 @@ function _form_builder_webform_form_builder_map_address_autocomp() {
 function _form_builder_webform_form_builder_properties_address_autocomp() {
   return _form_builder_webform_form_builder_properties_textfield();
 }
-
