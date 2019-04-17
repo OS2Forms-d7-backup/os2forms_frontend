@@ -92,6 +92,7 @@ function _webform_render_addrs_autcomp_l($component, $value = NULL, $filter = TR
   }
   $element['address']['#validated'] = TRUE;
   $element['address']['#webform_validated'] = FALSE;
+  $element['address']['#weight'] = '-1';
 
   // Component matrikula.
   $component_matrikula = $component;
