@@ -269,7 +269,7 @@ function _webform_render_address_autocomp($component, $value = NULL, $filter = T
     'remove_code' => $remove_code,
   );
 
-  $element['#autocomplete_path'] = "os2forms_address_autocomp_autocomplete/" . http_build_query($params);
+  $element['#autocomplete_path'] = os2forms_address_autocomp_generate_autocomplete_path($params);
   $element['#element_validate'] = array('os2forms_address_autocomp_address_autocomplete_validate');
 
   return $element;
@@ -320,14 +320,11 @@ function _webform_csv_data_address_autocomp($component, $export_options, $value)
 /**
  * A Drupal Form API Validation function.
  *
- * Validates the entered value against the values returned by webservice.
+ * Validates the entered value in address_autocomplete field.
  *
- * @param array $element
- *   The form element.
- * @param array $form_state
- *   The full form state for the webform.
+ * @see os2forms_address_autocomp_is_element_valid()
  */
-function os2forms_address_autocomp_address_autocomplete_validate($element, &$form_state) {
+function os2forms_address_autocomp_address_autocomplete_validate($element, &$form_state, $form) {
   // Trim spaces for basic cleanup.
   $value = trim($element['#value']);
   form_set_value($element, $value, $form_state);
@@ -340,17 +337,7 @@ function os2forms_address_autocomp_address_autocomplete_validate($element, &$for
       'remove_code' => $element['#webform_component']['extra']['remove_code'],
     );
 
-    $search_value = $value;
-
-    // Special validation for 'block' mode.
-    if ($params['mode'] === 'block') {
-      // Making a search value from e.g. '1070455 Testrup, Kattrup' to be
-      // 'Testrup, Kattrup', because the webservice is not capable of searching,
-      // when code is present in the search string.
-      $search_value = preg_replace('/^\d* /', '', $value);
-    }
-
-    if (!in_array($value, os2forms_address_autocomp_perform_request($params, $search_value))) {
+    if (!os2forms_address_autocomp_is_element_valid($value, $params)) {
       form_error($element, t('!name: "!value" has been changed. Only values from list are allowed.', array('!name' => $element['#title'], '!value' => $value)));
     }
   }

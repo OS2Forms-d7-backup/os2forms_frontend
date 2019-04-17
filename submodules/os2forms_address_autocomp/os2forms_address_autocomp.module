@@ -7,14 +7,14 @@ function os2forms_address_autocomp_webform_component_info() {
   $components = array();
   $components['address_autocomp'] = array(
     'label' => t('Address autocomplete'),
-    'description' => t('Address automcomplete field.'),
+    'description' => t('Address autocomplete field.'),
     'file' => 'components/address_autocomp.inc',
   );
 
-  $components['addrs_autcomp_l'] = array(
+  $components['addrs_autocomp_l'] = array(
     'label' => t('Address autocomplete linked'),
-    'description' => t('Address automcomplete linked field.'),
-    'file' => 'components/addrs_autcomp_l.inc',
+    'description' => t('Address autocomplete linked field.'),
+    'file' => 'components/addrs_autocomp_l.inc',
   );
 
   return $components;
@@ -250,4 +250,68 @@ function os2forms_address_autocomp_form_builder_properties($form_type) {
     $properties['options']['class'] = 'FormBuilderWebformPropertyOptions';
   }
   return $properties;
+}
+
+/**
+ * Generating autocomplete path based autocomplete params.
+ *
+ * @param mixed $autocomplete_params
+ *   Array of autocomplete params.
+ *
+ * @return string
+ *   Generated autocomplete path.
+ */
+function os2forms_address_autocomp_generate_autocomplete_path($autocomplete_params) {
+  return "os2forms_address_autocomp_autocomplete/" . http_build_query($autocomplete_params);
+}
+
+/**
+ * Extracts the autocomplete params from the autocomplete path.
+ *
+ * @param string $autocomplete_path
+ *   Autocomplete path.
+ *
+ * @return array
+ *   Array of autocomplete params.
+ */
+function os2forms_address_autocomp_extract_params_from_autocomplete_path($autocomplete_path) {
+  // Getting autocomplete params as string.
+  $autocomplete_params_str = str_replace("os2forms_address_autocomp_autocomplete/", '', $autocomplete_path);
+
+  // Getting autocomplete params as array.
+  $autocomplete_params = array();
+  parse_str($autocomplete_params_str, $autocomplete_params);
+
+  return $autocomplete_params;
+}
+
+/**
+ * Validates the fields value based on the provided params.
+ *
+ * Validates the entered value against the values returned by webservice.
+ *
+ * @param string $value
+ *   Field value
+ * @param $params
+ *   Array of params.
+ *
+ * @return bool
+ *   True if valid, false otherwise.
+ */
+function os2forms_address_autocomp_is_element_valid($value, $params) {
+  $search_value = $value;
+
+  // Special validation for 'block' mode.
+  if ($params['mode'] === 'block') {
+    // Making a search value from e.g. '1070455 Testrup, Kattrup' to be
+    // 'Testrup, Kattrup', because the webservice is not capable of searching,
+    // when code is present in the search string.
+    $search_value = preg_replace('/^\d* /', '', $value);
+  }
+
+  if (!in_array($value, os2forms_address_autocomp_perform_request($params, $search_value))) {
+    return FALSE;
+  }
+
+  return TRUE;
 }

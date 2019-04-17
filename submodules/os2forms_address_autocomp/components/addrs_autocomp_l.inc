@@ -12,7 +12,7 @@ module_load_include('inc', 'os2forms_address_autocomp', 'components/address_auto
 /**
  * Implements _webform_defaults_component().
  */
-function _webform_defaults_addrs_autcomp_l() {
+function _webform_defaults_addrs_autocomp_l() {
   $defaults = _webform_defaults_fieldset();
   return $defaults;
 }
@@ -22,7 +22,7 @@ function _webform_defaults_addrs_autcomp_l() {
  *
  * Used in on component edit page.
  */
-function _webform_edit_addrs_autcomp_l($component) {
+function _webform_edit_addrs_autocomp_l($component) {
   $form = array();
 
   $form['remove_place_name'] = array(
@@ -47,7 +47,7 @@ function _webform_edit_addrs_autcomp_l($component) {
     '#description' => t('CSV list of municipalities codes, what will limit the address lookup.<br/><b>NB!</b> Jordstykker does not support multiple values'),
   );
 
-  $form['#validate'][] = '_webform_edit_addrs_autcomp_l_form_validate';
+  $form['#validate'][] = '_webform_edit_addrs_autocomp_l_form_validate';
 
   return $form;
 }
@@ -55,7 +55,7 @@ function _webform_edit_addrs_autcomp_l($component) {
 /**
  * Form _webform_edit_address_autocomp validate.
  */
-function _webform_edit_addrs_autcomp_l_form_validate($form, &$form_state) {
+function _webform_edit_addrs_autocomp_l_form_validate($form, &$form_state) {
   $limit_by_municipality = $form_state['values']['extra']['limit_by_municipality'];
 
   if (!empty($limit_by_municipality)) {
@@ -69,7 +69,7 @@ function _webform_edit_addrs_autcomp_l_form_validate($form, &$form_state) {
 /**
  * Implements _webform_render_component().
  */
-function _webform_render_addrs_autcomp_l($component, $value = NULL, $filter = TRUE, $submission = NULL) {
+function _webform_render_addrs_autocomp_l($component, $value = NULL, $filter = TRUE, $submission = NULL) {
   $element = _webform_render_fieldset($component, $value, $filter, $submission);
 
   // Component address.
@@ -80,12 +80,12 @@ function _webform_render_addrs_autcomp_l($component, $value = NULL, $filter = TR
   $element['address']['#default_value'] = $value['address'];
   $element['address']['#webform_component'] = $component_address;
   $element['address']['#ajax'] = array(
-    'callback' => 'os2forms_address_automcomplete_addrs_automcomp_l_change_autocomplete_path',
+    'callback' => 'os2forms_address_autocomp_addrs_autocomp_l_change_autocomplete_path',
     'event' => 'blur',
     'effect' => 'none',
     'progress' => array(
       'type' => 'none'
-    )
+    ),
   );
   if (webform_component_feature($component['type'], 'private')) {
     $element['address']['#webform_private'] = $component['extra']['private'];
@@ -112,16 +112,60 @@ function _webform_render_addrs_autcomp_l($component, $value = NULL, $filter = TR
 
   // If address values is not empty, set the restrictions right away.
   if (!empty($value['address'])) {
-    $element['matrikula']['#autocomplete_path'] = os2forms_address_automcomplete_addrs_automcomp_l_generate_autocomplete_path($value['address'], $element['matrikula']['#autocomplete_path']);
+    $autocomplete_params = os2forms_address_autocomp_addrs_autocomp_l_generate_autocomplete_params($value['address'], $element['matrikula']['#autocomplete_path']);
+    $element['matrikula']['#autocomplete_path'] = os2forms_address_autocomp_generate_autocomplete_path($autocomplete_params);
   }
+
+  // Changing matrikula element validation function.
+  unset($element['address']['#element_validate']);
+  unset($element['matrikula']['#element_validate']);
+  $element['#element_validate'] = array('os2forms_address_autocomp_addrs_autocomp_l_validate');
 
   return $element;
 }
 
 /**
+ * A Drupal Form API Validation function.
+ *
+ * Validates the entered values in addrs_autocomp_l field.
+ * Also updates the autocomplete path for matrikula field, since it's getting
+ * reset if validation fails.
+ *
+ * @see os2forms_address_autocomp_is_element_valid()
+ */
+function os2forms_address_autocomp_addrs_autocomp_l_validate($element, &$form_state, $form) {
+  $parents = $element['#parents'];
+
+  $value_address = $form_state['values'][$parents[0]][$parents[1]]['address'];
+  $value_matrikula = $form_state['values'][$parents[0]][$parents[1]]['matrikula'];
+
+  // Getting matrikula autocomplete params.
+  $matrikula_ac_path = $form_state['complete form'][$parents[0]][$parents[1]]['matrikula']['#autocomplete_path'];
+  $matrikula_ac_params = os2forms_address_autocomp_addrs_autocomp_l_generate_autocomplete_params($value_address, $matrikula_ac_path);
+
+  // Updating matrikula autocomplete path.
+  $form_state['complete form'][$parents[0]][$parents[1]]['matrikula']['#autocomplete_path'] = os2forms_address_autocomp_generate_autocomplete_path($matrikula_ac_params);
+  $form_state['complete form'][$parents[0]][$parents[1]]['matrikula'] = form_process_autocomplete($form_state['complete form'][$parents[0]][$parents[1]]['matrikula']);
+
+  // Updating matrikula webform_component['extra'].
+  $form_state['complete form'][$parents[0]][$parents[1]]['matrikula']['#webform_component']['extra'] = $matrikula_ac_params + $form_state['complete form'][$parents[0]][$parents[1]]['matrikula']['#webform_component']['extra'];
+
+  // Getting address autocomplete params.
+  $address_ac_path = $form_state['complete form'][$parents[0]][$parents[1]]['address']['#autocomplete_path'];
+  $address_ac_params = os2forms_address_autocomp_extract_params_from_autocomplete_path($address_ac_path);
+
+  if (!empty($value_address) && !os2forms_address_autocomp_is_element_valid($value_address, $address_ac_params)) {
+    form_error($element, t('!name: Address value has been changed. Only values from list are allowed.', array('!name' => $element['#title'])));
+  }
+  if (!empty($value_matrikula) && !os2forms_address_autocomp_is_element_valid($value_matrikula, $matrikula_ac_params)) {
+    form_error($element, t('!name: Matrikula value has been changed. Only values from list are allowed.', array('!name' => $element['#title'])));
+  }
+}
+
+/**
  * Ajax callback to update field autocomplete path.
  */
-function os2forms_address_automcomplete_addrs_automcomp_l_change_autocomplete_path($form, &$form_state) {
+function os2forms_address_autocomp_addrs_autocomp_l_change_autocomplete_path($form, &$form_state) {
   // Equals to something like: submitted[address_linked][address].
   $parents = $form_state['triggering_element']['#parents'];
 
@@ -130,35 +174,33 @@ function os2forms_address_automcomplete_addrs_automcomp_l_change_autocomplete_pa
 
   // Changing the autocomplete path.
   $old_autocomplete_path  = $matrikula_element['#autocomplete_path'];
-  $new_autocomplete_path = os2forms_address_automcomplete_addrs_automcomp_l_generate_autocomplete_path($address_element_value, $old_autocomplete_path);
-  $matrikula_element['#autocomplete_path'] = $new_autocomplete_path;
+  $autocomplete_params = os2forms_address_autocomp_addrs_autocomp_l_generate_autocomplete_params($address_element_value, $old_autocomplete_path);
 
+  $matrikula_element['#autocomplete_path'] = os2forms_address_autocomp_generate_autocomplete_path($autocomplete_params);
   $matrikula_element = form_process_autocomplete($matrikula_element);
 
+  // Updating webform_component['extra'].
+  $matrikula_element['#webform_component']['extra'] = $autocomplete_params + $matrikula_element['#webform_component']['extra'];
+
   $commands = array();
-  $commands[] = ajax_command_insert('#js-' . $parents[1] . '-matrikula', drupal_render($matrikula_element));
+  $commands[] = ajax_command_replace('#js-' . $parents[1] . '-matrikula', drupal_render($matrikula_element));
 
   return array('#type' => 'ajax', '#commands' => $commands);
 }
 
 /**
- * Generating autocomplete path based on valus from address field.
+ * Generating autocomplete param array based on values from address field.
  *
  * @param string $address_value
  *   Values from the address field.
  * @param $autocomplete_path
  *   Current autocomplete path.
  *
- * @return string
- *   New autocomplete path.
+ * @return array
+ *   New autocomplete params.
  */
-function os2forms_address_automcomplete_addrs_automcomp_l_generate_autocomplete_path($address_value, $autocomplete_path) {
-  // Getting autocomplete params as string.
-  $autocomplete_params_str = str_replace("os2forms_address_autocomp_autocomplete/", '', $autocomplete_path);
-
-  // Getting autocomplete params as array.
-  $autocomplete_params = array();
-  parse_str($autocomplete_params_str, $autocomplete_params);
+function os2forms_address_autocomp_addrs_autocomp_l_generate_autocomplete_params($address_value, $autocomplete_path) {
+  $autocomplete_params = os2forms_address_autocomp_extract_params_from_autocomplete_path($autocomplete_path);
 
   if ($address_value) {
     // Getting address.
@@ -178,16 +220,13 @@ function os2forms_address_automcomplete_addrs_automcomp_l_generate_autocomplete_
     unset($autocomplete_params['property_nr']);
   }
 
-  // Generating new autocomplete path
-  $new_autocomplete_path = "os2forms_address_autocomp_autocomplete/" . http_build_query($autocomplete_params);
-
-  return $new_autocomplete_path;
+  return $autocomplete_params;
 }
 
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_addrs_autcomp_l($component, $value, $format = 'html', $submission = array()) {
+function _webform_display_addrs_autocomp_l($component, $value, $format = 'html', $submission = array()) {
   // Component address.
   $component_address = $component;
   $component_address['name'] .= ' - ' . t('address');
@@ -205,14 +244,14 @@ function _webform_display_addrs_autcomp_l($component, $value, $format = 'html', 
 /**
  * Implements _webform_analysis_component().
  */
-function _webform_analysis_addrs_autcomp_l($component, $sids = array(), $single = FALSE, $join = NULL) {
+function _webform_analysis_addrs_autocomp_l($component, $sids = array(), $single = FALSE, $join = NULL) {
   // This function is not implemented.
 }
 
 /**
  * Implements _webform_table_component().
  */
-function _webform_table_addrs_autcomp_l($component, $value) {
+function _webform_table_addrs_autocomp_l($component, $value) {
   return t('Address') . ': ' . _webform_table_textfield($component, array($value['address'])) . '</br>'
     . t('Matrikula') . ': ' . _webform_table_textfield($component, array($value['matrikula']));
 }
@@ -220,36 +259,36 @@ function _webform_table_addrs_autcomp_l($component, $value) {
 /**
  * Implements _webform_action_set_component().
  */
-function _webform_action_set_addrs_autcomp_l($component, &$element, &$form_state, $value) {
+function _webform_action_set_addrs_autocomp_l($component, &$element, &$form_state, $value) {
   // This function is not implemented.
 }
 
 /**
  * Implements _webform_csv_headers_component().
  */
-function _webform_csv_headers_addrs_autcomp_l($component, $export_options) {
+function _webform_csv_headers_addrs_autocomp_l($component, $export_options) {
   return _webform_csv_headers_textfield($component, $export_options);
 }
 
 /**
  * Implements _webform_csv_data_component().
  */
-function _webform_csv_data_addrs_autcomp_l($component, $export_options, $value) {
+function _webform_csv_data_addrs_autocomp_l($component, $export_options, $value) {
   return _webform_csv_data_textfield($component, $export_options, array($value['address'])) . ' - ' . _webform_csv_data_textfield($component, $export_options, array($value['matrikula']));
 }
 
 /**
  * Implements _form_builder_webform_form_builder_types_component().
  */
-function _form_builder_webform_form_builder_types_addrs_autcomp_l() {
+function _form_builder_webform_form_builder_types_addrs_autocomp_l() {
   $fields = array();
 
-  $fields['addrs_autcomp_l'] = array(
+  $fields['addrs_autocomp_l'] = array(
     'title' => t('Address autocomplete linked'),
     'weight' => -20,
   );
   $component['name'] = t('New address linked');
-  $fields['addrs_autcomp_l']['default'] = _form_builder_webform_default('addrs_autcomp_l', array(), $component);
+  $fields['addrs_autocomp_l']['default'] = _form_builder_webform_default('addrs_autocomp_l', array(), $component);
 
   return $fields;
 }
@@ -257,9 +296,9 @@ function _form_builder_webform_form_builder_types_addrs_autcomp_l() {
 /**
  * Implements _form_builder_webform_form_builder_map_component().
  */
-function _form_builder_webform_form_builder_map_addrs_autcomp_l() {
+function _form_builder_webform_form_builder_map_addrs_autocomp_l() {
   $mapping = array();
-  $mapping['form_builder_type'] = 'addrs_autcomp_l';
+  $mapping['form_builder_type'] = 'addrs_autocomp_l';
 
   $mapping['properties']['remove_place_name'] = array(
     'storage_parents' => array('extra', 'remove_place_name'),
