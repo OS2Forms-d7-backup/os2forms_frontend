@@ -257,10 +257,19 @@ function os2forms_address_autocomp_property_remove_code_form(&$form_state, $form
 function _webform_render_address_autocomp($component, $value = NULL, $filter = TRUE, $submission = NULL) {
   $element = _webform_render_textfield($component, $value, $filter, $submission);
 
-  $mode = $component['extra']['mode'];
-  $remove_place_name = $component['extra']['remove_place_name'];
-  $limit_by_municipality = $component['extra']['limit_by_municipality'];
-  $remove_code = $component['extra']['remove_code'];
+  $mode = $remove_place_name = $limit_by_municipality = $remove_code = '';
+  if (isset($component['extra']['mode'])) {
+    $mode = $component['extra']['mode'];
+  }
+  if (isset($component['extra']['remove_place_name'])) {
+    $remove_place_name = $component['extra']['remove_place_name'];
+  }
+  if (isset($component['extra']['limit_by_municipality'])) {
+    $limit_by_municipality = $component['extra']['limit_by_municipality'];
+  }
+  if (isset($component['extra']['remove_code'])) {
+    $remove_code = $component['extra']['remove_code'];
+  }
 
   $params = array(
     'mode' => ($mode) ? $mode : 'address',
@@ -330,11 +339,28 @@ function os2forms_address_autocomp_address_autocomplete_validate($element, &$for
   form_set_value($element, $value, $form_state);
 
   if ($value != '') {
+    $mode = $remove_place_name = $limit_by_municipality = $remove_code = '';
+
+    $component = $element['#webform_component'];
+
+    if (isset($component['extra']['mode'])) {
+      $mode = $component['extra']['mode'];
+    }
+    if (isset($component['extra']['remove_place_name'])) {
+      $remove_place_name = $component['extra']['remove_place_name'];
+    }
+    if (isset($component['extra']['limit_by_municipality'])) {
+      $limit_by_municipality = $component['extra']['limit_by_municipality'];
+    }
+    if (isset($component['extra']['remove_code'])) {
+      $remove_code = $component['extra']['remove_code'];
+    }
+
     $params = array(
-      'mode' => $element['#webform_component']['extra']['mode'],
-      'remove_place_name' => $element['#webform_component']['extra']['remove_place_name'],
-      'limit_by_municipality' => $element['#webform_component']['extra']['limit_by_municipality'],
-      'remove_code' => $element['#webform_component']['extra']['remove_code'],
+      'mode' => $mode,
+      'remove_place_name' => $remove_place_name,
+      'limit_by_municipality' => $limit_by_municipality,
+      'remove_code' => $remove_code,
     );
 
     if (!os2forms_address_autocomp_is_element_valid($value, $params)) {

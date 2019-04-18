@@ -75,6 +75,7 @@ function _webform_render_addrs_autocomp_l($component, $value = NULL, $filter = T
   // Component address.
   $component_address = $component;
   $component_address['name'] .= ' - ' . t('address');
+  $component_address['extra'] += _webform_defaults_textfield()['extra'];
   $component_address['extra']['mode'] = 'address';
   $element['address'] = _webform_render_address_autocomp($component_address, $value, $filter, $submission);
   $element['address']['#default_value'] = $value['address'];
@@ -97,6 +98,7 @@ function _webform_render_addrs_autocomp_l($component, $value = NULL, $filter = T
   // Component matrikula.
   $component_matrikula = $component;
   $component_matrikula['name'] .= ' - ' . t('matrikula');
+  $component_matrikula['extra'] += _webform_defaults_textfield()['extra'];
   $component_matrikula['extra']['mode'] = 'matrikula';
   $element['matrikula'] = _webform_render_address_autocomp($component_matrikula, $value, $filter, $submission);
   $element['matrikula']['#default_value'] = $value['matrikula'];
@@ -229,15 +231,31 @@ function os2forms_address_autocomp_addrs_autocomp_l_generate_autocomplete_params
 function _webform_display_addrs_autocomp_l($component, $value, $format = 'html', $submission = array()) {
   // Component address.
   $component_address = $component;
+  $component_address['extra'] += _webform_defaults_textfield()['extra'];
   $component_address['name'] .= ' - ' . t('address');
+
+  $address_display = _webform_display_textfield($component_address, array($value['address']), $format, $submission);
+  if (!isset($address_display['#parents'])) {
+    $parents = array('submitted');
+    $parents[] = $component['form_key'];
+    $address_display['#parents'] = $parents;
+  }
 
   // Component matrikula.
   $component_matrikula = $component;
+  $component_matrikula['extra'] += _webform_defaults_textfield()['extra'];
   $component_matrikula['name'] .= ' - ' . t('matrikula');
 
+  $matrikula_display = _webform_display_textfield($component_matrikula, array($value['matrikula']), $format, $submission);
+  if (!isset($matrikula_display['#parents'])) {
+    $parents = array('submitted');
+    $parents[] = $component['form_key'];
+    $matrikula_display['#parents'] = $parents;
+  }
+
   return array(
-    'address' => _webform_display_textfield($component_address, array($value['address']), $format, $submission),
-    'matrikula' => _webform_display_textfield($component_matrikula, array($value['matrikula']), $format, $submission),
+    'address' => $address_display,
+    'matrikula' => $matrikula_display,
   );
 }
 
