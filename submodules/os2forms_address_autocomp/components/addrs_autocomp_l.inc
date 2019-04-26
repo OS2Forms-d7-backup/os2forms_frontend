@@ -355,6 +355,7 @@ function _webform_display_addrs_autocomp_l($component, $value, $format = 'html',
     $parents[] = $component['form_key'];
     $address_display['#parents'] = $parents;
   }
+  $address_display['#weight'] = -1;
 
   // Component matrikula.
   $component_matrikula = $component;
