@@ -15,8 +15,8 @@ module_load_include('inc', 'os2forms_address_autocomp', 'components/address_auto
  */
 function _webform_defaults_addrs_autocomp_l() {
   $defaults = _webform_defaults_fieldset();
-  $defaults['extra']['address_label_suffix'] = '- ' . t('address');
-  $defaults['extra']['matrikula_label_suffix'] = '- ' . t('matrikula');
+  $defaults['extra']['address_label_suffix'] = t('Address');
+  $defaults['extra']['matrikula_label_suffix'] = t('Matrikula');
   return $defaults;
 }
 
@@ -143,6 +143,7 @@ function _webform_render_addrs_autocomp_l($component, $value = NULL, $filter = T
 
   // Component address.
   $component_address = $component;
+  $component_address['name'] = '';
   $component_address['name'] .= empty($component['extra']['address_label_suffix']) ? NULL : ($filter ? ' ' . webform_filter_xss($component['extra']['address_label_suffix']) : ' ' . $component['extra']['address_label_suffix']);
   $component_address['extra'] += _webform_defaults_textfield()['extra'];
   $component_address['extra']['mode'] = 'address';
@@ -167,6 +168,7 @@ function _webform_render_addrs_autocomp_l($component, $value = NULL, $filter = T
 
   // Component matrikula.
   $component_matrikula = $component;
+  $component_matrikula['name'] = '';
   $component_matrikula['name'] .= empty($component['extra']['matrikula_label_suffix']) ? NULL : ($filter ? ' ' . webform_filter_xss($component['extra']['matrikula_label_suffix']) : ' ' . $component['extra']['matrikula_label_suffix']);
   $component_matrikula['extra'] += _webform_defaults_select()['extra'];
   $component_matrikula['extra']['mode'] = 'matrikula';
