@@ -30,7 +30,7 @@ function _webform_edit_addrs_autocomp_l($component) {
 
   $form['display']['address_label_suffix'] = array(
     '#type' => 'textfield',
-    '#title' => t('Address filed postfix text placed to the right of the textfield'),
+    '#title' => t('Address field label'),
     '#default_value' => ($component['extra']['address_label_suffix']) ? ($component['extra']['address_label_suffix']) : '',
     '#description' => t('Example: address.'),
     '#size' => 20,
@@ -41,7 +41,7 @@ function _webform_edit_addrs_autocomp_l($component) {
 
   $form['display']['matrikula_label_suffix'] = array(
     '#type' => 'textfield',
-    '#title' => t('Matrikula filed postfix text placed to the right of the textfield'),
+    '#title' => t('Matrikula field label'),
     '#default_value' => ($component['extra']['matrikula_label_suffix']) ? ($component['extra']['matrikula_label_suffix']) : '',
     '#description' => t('Example: address.'),
     '#size' => 20,
@@ -102,7 +102,7 @@ function os2forms_address_autocomp_property_address_label_suffix_form(&$form_sta
   $form['address_label_suffix'] = array(
     '#form_builder' => array('property_group' => 'display'),
     '#type' => 'textfield',
-    '#title' => t('Address filed postfix text placed to the right of the textfield'),
+    '#title' => t('Address field label'),
     '#default_value' => ($element['#address_label_suffix']) ? $element['#address_label_suffix'] : '',
     '#description' => t('Example: address.'),
     '#size' => 20,
@@ -124,7 +124,7 @@ function os2forms_address_autocomp_property_matrikula_label_suffix_form(&$form_s
   $form['matrikula_label_suffix'] = array(
     '#form_builder' => array('property_group' => 'display'),
     '#type' => 'textfield',
-    '#title' => t('Matrikula filed postfix text placed to the right of the textfield'),
+    '#title' => t('Matrikula field label'),
     '#default_value' => ($element['#matrikula_label_suffix']) ? $element['#matrikula_label_suffix'] : '',
     '#description' => t('Example: matrikula.'),
     '#size' => 20,
