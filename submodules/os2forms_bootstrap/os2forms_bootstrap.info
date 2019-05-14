@@ -3,5 +3,7 @@ core = 7.x
 package = OS2Forms
 version = 7.x-1.0
 dependencies[] = webform_bt_layout
+stylesheets[all][] = css/os2forms_bootstrap.css
+scripts[] = js/os2forms_bootstrap.js
 features[features_api][] = api:2
 project path = sites/all/modules/os2forms/submodules
