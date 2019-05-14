@@ -7,11 +7,13 @@
 
 jQuery(document).ajaxComplete(function(e) {
   function dropdownWidth(){
-    var width = jQuery('.dropdown').parent('.form-item').find('.input-group').width();
-    var input_offset = jQuery('.dropdown').parent('.form-item').find('.input-group').offset();
-    var dropdown_offset = jQuery('.dropdown').offset();
-    jQuery('.dropdown').width(width);
-    jQuery('.dropdown').offset({top:dropdown_offset.top, left: input_offset.left});
+    if (jQuery('.dropdown') != undefined){
+      var width = jQuery('.dropdown').parent('.form-item').find('.input-group').width();
+      var input_offset = jQuery('.dropdown').parent('.form-item').find('.input-group').offset();
+      var dropdown_offset = jQuery('.dropdown').offset();
+      jQuery('.dropdown').width(width);
+      jQuery('.dropdown').offset({top:dropdown_offset.top, left: input_offset.left});
+    }
   }
   dropdownWidth();
   jQuery(window).resize(function(e) {
