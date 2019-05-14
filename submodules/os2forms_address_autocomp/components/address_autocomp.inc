@@ -257,10 +257,19 @@ function os2forms_address_autocomp_property_remove_code_form(&$form_state, $form
 function _webform_render_address_autocomp($component, $value = NULL, $filter = TRUE, $submission = NULL) {
   $element = _webform_render_textfield($component, $value, $filter, $submission);
 
-  $mode = $component['extra']['mode'];
-  $remove_place_name = $component['extra']['remove_place_name'];
-  $limit_by_municipality = $component['extra']['limit_by_municipality'];
-  $remove_code = $component['extra']['remove_code'];
+  $mode = $remove_place_name = $limit_by_municipality = $remove_code = '';
+  if (isset($component['extra']['mode'])) {
+    $mode = $component['extra']['mode'];
+  }
+  if (isset($component['extra']['remove_place_name'])) {
+    $remove_place_name = $component['extra']['remove_place_name'];
+  }
+  if (isset($component['extra']['limit_by_municipality'])) {
+    $limit_by_municipality = $component['extra']['limit_by_municipality'];
+  }
+  if (isset($component['extra']['remove_code'])) {
+    $remove_code = $component['extra']['remove_code'];
+  }
 
   $params = array(
     'mode' => ($mode) ? $mode : 'address',
@@ -269,7 +278,7 @@ function _webform_render_address_autocomp($component, $value = NULL, $filter = T
     'remove_code' => $remove_code,
   );
 
-  $element['#autocomplete_path'] = "os2forms_address_autocomp_autocomplete/" . http_build_query($params);
+  $element['#autocomplete_path'] = os2forms_address_autocomp_generate_autocomplete_path($params);
   $element['#element_validate'] = array('os2forms_address_autocomp_address_autocomplete_validate');
 
   return $element;
@@ -320,37 +329,41 @@ function _webform_csv_data_address_autocomp($component, $export_options, $value)
 /**
  * A Drupal Form API Validation function.
  *
- * Validates the entered value against the values returned by webservice.
+ * Validates the entered value in address_autocomplete field.
  *
- * @param array $element
- *   The form element.
- * @param array $form_state
- *   The full form state for the webform.
+ * @see os2forms_address_autocomp_is_element_valid()
  */
-function os2forms_address_autocomp_address_autocomplete_validate($element, &$form_state) {
+function os2forms_address_autocomp_address_autocomplete_validate($element, &$form_state, $form) {
   // Trim spaces for basic cleanup.
   $value = trim($element['#value']);
   form_set_value($element, $value, $form_state);
 
   if ($value != '') {
-    $params = array(
-      'mode' => $element['#webform_component']['extra']['mode'],
-      'remove_place_name' => $element['#webform_component']['extra']['remove_place_name'],
-      'limit_by_municipality' => $element['#webform_component']['extra']['limit_by_municipality'],
-      'remove_code' => $element['#webform_component']['extra']['remove_code'],
-    );
+    $mode = $remove_place_name = $limit_by_municipality = $remove_code = '';
 
-    $search_value = $value;
+    $component = $element['#webform_component'];
 
-    // Special validation for 'block' mode.
-    if ($params['mode'] === 'block') {
-      // Making a search value from e.g. '1070455 Testrup, Kattrup' to be
-      // 'Testrup, Kattrup', because the webservice is not capable of searching,
-      // when code is present in the search string.
-      $search_value = preg_replace('/^\d* /', '', $value);
+    if (isset($component['extra']['mode'])) {
+      $mode = $component['extra']['mode'];
+    }
+    if (isset($component['extra']['remove_place_name'])) {
+      $remove_place_name = $component['extra']['remove_place_name'];
+    }
+    if (isset($component['extra']['limit_by_municipality'])) {
+      $limit_by_municipality = $component['extra']['limit_by_municipality'];
+    }
+    if (isset($component['extra']['remove_code'])) {
+      $remove_code = $component['extra']['remove_code'];
     }
 
-    if (!in_array($value, os2forms_address_autocomp_perform_request($params, $search_value))) {
+    $params = array(
+      'mode' => $mode,
+      'remove_place_name' => $remove_place_name,
+      'limit_by_municipality' => $limit_by_municipality,
+      'remove_code' => $remove_code,
+    );
+
+    if (!os2forms_address_autocomp_is_element_valid($value, $params)) {
       form_error($element, t('!name: "!value" has been changed. Only values from list are allowed.', array('!name' => $element['#title'], '!value' => $value)));
     }
   }
@@ -400,4 +413,3 @@ function _form_builder_webform_form_builder_map_address_autocomp() {
 function _form_builder_webform_form_builder_properties_address_autocomp() {
   return _form_builder_webform_form_builder_properties_textfield();
 }
-

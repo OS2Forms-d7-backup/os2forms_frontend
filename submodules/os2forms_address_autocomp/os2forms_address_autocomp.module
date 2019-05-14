@@ -7,9 +7,16 @@ function os2forms_address_autocomp_webform_component_info() {
   $components = array();
   $components['address_autocomp'] = array(
     'label' => t('Address autocomplete'),
-    'description' => t('Address automcomplete field.'),
+    'description' => t('Address autocomplete field.'),
     'file' => 'components/address_autocomp.inc',
   );
+
+  $components['addrs_autocomp_l'] = array(
+    'label' => t('Address autocomplete - with matrikula'),
+    'description' => t('Address autocomplete linked with matrikula field.'),
+    'file' => 'components/addrs_autocomp_l.inc',
+  );
+
   return $components;
 }
 
@@ -36,6 +43,7 @@ function os2forms_address_autocomp_menu() {
  *   The textfield input we're sending to the API.
  */
 function os2forms_address_autocomp_autocomplete($params, $string) {
+  $params_arr = array();
   parse_str($params,$params_arr);
   $matches = os2forms_address_autocomp_perform_request($params_arr, $string);
 
@@ -48,88 +56,171 @@ function os2forms_address_autocomp_autocomplete($params, $string) {
  *
  * @param mixed $params
  *   The field configuration params of what needs to be returned as a suggestion.
- * @param string $string
+ * @param string $search_string
  *   The textfield input we're sending to the API
  *
  * @return array
  *   Array of found suggestions.
  */
-function os2forms_address_autocomp_perform_request($params, $string) {
+function os2forms_address_autocomp_perform_request($params, $search_string = '') {
   $matches = array();
 
-  if ($string) {
-    $request_url = '';
-    switch ($params['mode']) {
-      case 'address':
-        $request_url = 'https://dawa.aws.dk/adresser/autocomplete?q=' . urlencode($string);
-        if (!empty($params['limit_by_municipality'])) {
-          $limit_by_municipality_arr = str_getcsv($params['limit_by_municipality']);
+  $request_url = '';
+  switch ($params['mode']) {
+    case 'address':
+      $request_url = 'https://dawa.aws.dk/adresser/autocomplete?q=' . urlencode($search_string);
+      if (!empty($params['limit_by_municipality'])) {
+        $limit_by_municipality_arr = str_getcsv($params['limit_by_municipality']);
 
-          $request_url .= '&kommunekode=' . implode('|', $limit_by_municipality_arr);
+        $request_url .= '&kommunekode=' . implode('|', $limit_by_municipality_arr);
+      }
+      break;
+
+    case 'block':
+      $request_url = 'https://dawa.aws.dk/ejerlav/autocomplete?q=' . urlencode($search_string);
+      break;
+
+    case 'matrikula':
+      $request_url = 'https://dawa.aws.dk/jordstykker/autocomplete?q=' . urlencode($search_string);
+      if (!empty($params['limit_by_municipality'])) {
+        $request_url .= '&kommunekode=' . $params['limit_by_municipality'];
+      }
+      if (!empty($params['property_nr'])) {
+        $request_url .= '&esrejendomsnr=' . $params['property_nr'];
+      }
+      break;
+  }
+
+  $json = file_get_contents($request_url);
+
+  $json_decoded = json_decode($json, true);
+  if (is_array($json_decoded)) {
+    // Mode = address and remove_place_name = TRUE
+    if ($params['mode'] == 'address' && $params['remove_place_name']) {
+      foreach ($json_decoded as $entry) {
+        $supplerendebynavn = $entry['adresse']['supplerendebynavn'];
+
+        $text = $entry['tekst'];
+        if (!empty($supplerendebynavn)) {
+          $text = preg_replace("/$supplerendebynavn,/", '', $text);
         }
-        break;
 
-      case 'block':
-        $request_url = 'https://dawa.aws.dk/ejerlav/autocomplete?q=' . urlencode($string);
-        break;
+        $matches[$text] = $text;
+      }
+    // Mode = block and remove_code = TRUE
+    } elseif ($params['mode'] == 'block' && $params['remove_code']) {
+      foreach ($json_decoded as $entry) {
+        $code = $entry['ejerlav']['kode'];
 
-      case 'matrikula':
-        $request_url = 'https://dawa.aws.dk/jordstykker/autocomplete?q=' . urlencode($string);
-        if (!empty($params['limit_by_municipality'])) {
-          $request_url .= '&kommunekode=' . $params['limit_by_municipality'];
+        $text = $entry['tekst'];
+        if (!empty($code)) {
+          $text = preg_replace("/$code /", '', $text);
         }
-        break;
+
+        $matches[$text] = $text;
+      }
+    // Mode = matrikula and remove_code = TRUE
+    } elseif ($params['mode'] == 'matrikula' && $params['remove_code']) {
+      foreach ($json_decoded as $entry) {
+        $code = $entry['jordstykke']['ejerlav']['kode'];
+
+        $text = $entry['tekst'];
+        if (!empty($code)) {
+          $text = preg_replace("/ \($code\)/", '', $text);
+        }
+
+        $matches[$text] = $text;
+      }
     }
-
-    $json = file_get_contents($request_url);
-
-    $json_decoded = json_decode($json, true);
-    if (is_array($json_decoded)) {
-      // Mode = address and remove_place_name = TRUE
-      if ($params['mode'] == 'address' && $params['remove_place_name']) {
-        foreach ($json_decoded as $entry) {
-          $supplerendebynavn = $entry['adresse']['supplerendebynavn'];
-
-          $text = $entry['tekst'];
-          if (!empty($supplerendebynavn)) {
-            $text = preg_replace("/$supplerendebynavn,/", '', $text);
-          }
-
-          $matches[$text] = $text;
-        }
-      // Mode = block and remove_code = TRUE
-      } elseif ($params['mode'] == 'block' && $params['remove_code']) {
-        foreach ($json_decoded as $entry) {
-          $code = $entry['ejerlav']['kode'];
-
-          $text = $entry['tekst'];
-          if (!empty($code)) {
-            $text = preg_replace("/$code /", '', $text);
-          }
-
-          $matches[$text] = $text;
-        }
-      // Mode = matrikula and remove_code = TRUE
-      } elseif ($params['mode'] == 'matrikula' && $params['remove_code']) {
-        foreach ($json_decoded as $entry) {
-          $code = $entry['jordstykke']['ejerlav']['kode'];
-
-          $text = $entry['tekst'];
-          if (!empty($code)) {
-            $text = preg_replace("/ \($code\)/", '', $text);
-          }
-
-          $matches[$text] = $text;
-        }
-      }
-      // Default output
-      else {
-        $matches = array_column($json_decoded, 'tekst', 'tekst');
-      }
+    // Default output
+    else {
+      $matches = array_column($json_decoded, 'tekst', 'tekst');
     }
   }
 
   return $matches;
+}
+
+/**
+ * Gets the address entity based on the search criteria.
+ *
+ * @param mixed $params
+ *   The field configuration params of what needs to be returned as a suggestion.
+ * @param string $search_string
+ *   The textfield input we're sending to the API
+ *
+ * @return mixed
+ *   Address formed as an array.
+ */
+function os2forms_address_autocomp_fetch_address($params, $search_string) {
+  $address_id = NULL;
+  $address = NULL;
+
+  // Fetching address ID.
+  $request_url = 'https://dawa.aws.dk/adresser/autocomplete?q=' . urlencode($search_string);
+  if (!empty($params['limit_by_municipality'])) {
+    $limit_by_municipality_arr = str_getcsv($params['limit_by_municipality']);
+
+    $request_url .= '&kommunekode=' . implode('|', $limit_by_municipality_arr);
+  }
+
+  $json = file_get_contents($request_url);
+  $json_decoded = json_decode($json, true);
+
+  if (is_array($json_decoded) && !empty($json_decoded)) {
+    $address_id = $json_decoded[0]['adresse']['id'];
+  }
+
+  // Fetching address.
+  if ($address_id) {
+    $request_url = 'https://dawa.aws.dk/adresser/' . $address_id;
+
+    $json = file_get_contents($request_url);
+    $json_decoded = json_decode($json, true);
+
+    if (is_array($json_decoded) && !empty($json_decoded)) {
+      $address = $json_decoded;
+    }
+  }
+
+  return $address;
+}
+
+/**
+ * Fetches the municipality from address entry.
+ *
+ * @param mixed $address
+ *   Address entry.
+ *
+ * @return string
+ *   Municipality code.
+ */
+function os2forms_address_autocomp_address_extract_municipality_code($address) {
+  $municipality_code = NULL;
+  if (is_array($address['adgangsadresse'])) {
+    $municipality_code = $address['adgangsadresse']['kommune']['kode'];
+  }
+
+  return $municipality_code;
+}
+
+/**
+ * Fetches the property number from address entry.
+ *
+ * @param mixed $address
+ *   Address entry.
+ *
+ * @return string
+ *   Property nr.
+ */
+function os2forms_address_autocomp_address_extract_property_nr($address) {
+  $property_nr = NULL;
+
+  if (is_array($address['adgangsadresse'])) {
+    $property_nr = $address['adgangsadresse']['esrejendomsnr'];
+  }
+
+  return $property_nr;
 }
 
 /**
@@ -141,6 +232,12 @@ function os2forms_address_autocomp_form_builder_properties($form_type) {
   $properties = array(
     'mode' => array(
       'form' => 'os2forms_address_autocomp_property_mode_form',
+    ),
+    'address_label_suffix' => array(
+      'form' => 'os2forms_address_autocomp_property_address_label_suffix_form',
+    ),
+    'matrikula_label_suffix' => array(
+      'form' => 'os2forms_address_autocomp_property_matrikula_label_suffix_form',
     ),
     'remove_place_name' => array(
       'form' => 'os2forms_address_autocomp_property_remove_place_name_form',
@@ -157,4 +254,68 @@ function os2forms_address_autocomp_form_builder_properties($form_type) {
     $properties['options']['class'] = 'FormBuilderWebformPropertyOptions';
   }
   return $properties;
+}
+
+/**
+ * Generating autocomplete path based autocomplete params.
+ *
+ * @param mixed $autocomplete_params
+ *   Array of autocomplete params.
+ *
+ * @return string
+ *   Generated autocomplete path.
+ */
+function os2forms_address_autocomp_generate_autocomplete_path($autocomplete_params) {
+  return "os2forms_address_autocomp_autocomplete/" . http_build_query($autocomplete_params);
+}
+
+/**
+ * Extracts the autocomplete params from the autocomplete path.
+ *
+ * @param string $autocomplete_path
+ *   Autocomplete path.
+ *
+ * @return array
+ *   Array of autocomplete params.
+ */
+function os2forms_address_autocomp_extract_params_from_autocomplete_path($autocomplete_path) {
+  // Getting autocomplete params as string.
+  $autocomplete_params_str = str_replace("os2forms_address_autocomp_autocomplete/", '', $autocomplete_path);
+
+  // Getting autocomplete params as array.
+  $autocomplete_params = array();
+  parse_str($autocomplete_params_str, $autocomplete_params);
+
+  return $autocomplete_params;
+}
+
+/**
+ * Validates the fields value based on the provided params.
+ *
+ * Validates the entered value against the values returned by webservice.
+ *
+ * @param string $value
+ *   Field value
+ * @param $params
+ *   Array of params.
+ *
+ * @return bool
+ *   True if valid, false otherwise.
+ */
+function os2forms_address_autocomp_is_element_valid($value, $params) {
+  $search_value = $value;
+
+  // Special validation for 'block' mode.
+  if ($params['mode'] === 'block') {
+    // Making a search value from e.g. '1070455 Testrup, Kattrup' to be
+    // 'Testrup, Kattrup', because the webservice is not capable of searching,
+    // when code is present in the search string.
+    $search_value = preg_replace('/^\d* /', '', $value);
+  }
+
+  if (!in_array($value, os2forms_address_autocomp_perform_request($params, $search_value))) {
+    return FALSE;
+  }
+
+  return TRUE;
 }
