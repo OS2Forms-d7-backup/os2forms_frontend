@@ -25,6 +25,73 @@ function os2forms_frontend_webform_component_defaults_alter(&$defaults, $type) {
 }
 
 /**
+ * Implements hook_token_info().
+ */
+function os2forms_frontend_token_info() {
+  $info = array();
+
+  $info['types']['session'] = array(
+    'name' => t('Session variables'),
+    'description' => t('Tokens from _SESSION.'),
+  );
+
+  $info['tokens']['session']['original_referrer_page'] = array(
+    'name' => t('Original referrer page'),
+    'description' => t('The URL that was a referrer to opening this webform.'),
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_tokens().
+ *
+ */
+function os2forms_frontend_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  $replacements = array();
+  $sanitize = !empty($options['sanitize']);
+
+  // Text format tokens.
+  if ($type == 'session') {
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'original_referrer_page':
+          $replacements[$original] = $_SESSION['original_referrer_page'];
+          if ($sanitize) {
+            $replacements[$original] = filter_xss($replacements[$original]);
+          }
+          break;
+      }
+    }
+  }
+
+  return $replacements;
+}
+
+/**
+ * Implement hook_node_view().
+ *
+ * Saves original_referrer_page into the session.
+ */
+function os2forms_frontend_node_view($node, $view_mode, $langcode) {
+  if ($node->type == 'webform') {
+    if (isset($_SERVER['HTTP_REFERER'])) {
+      // Composing referrer URL that can be used for comparison.
+      $referer_url_parts = parse_url($_SERVER['HTTP_REFERER']);
+      $referer_page_url = $referer_url_parts['scheme'] . '://' . $referer_url_parts['host'];
+      if ($referer_url_parts['port']) {
+        $referer_page_url .= ':' . $referer_url_parts['port'];
+      }
+
+      // Checking that referrer page URL is not the same as our base URL.
+      if (strcmp($referer_page_url, $GLOBALS['base_url']) !== 0) {
+        $_SESSION['original_referrer_page'] = $_SERVER['HTTP_REFERER'];
+      }
+    }
+  }
+}
+/**
  * Implements hook_webform_submission_insert().
  *
  * Put submission into a list of unanonymized submissions.
