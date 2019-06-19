@@ -81,7 +81,7 @@ function os2forms_frontend_tokens($type, $tokens, array $data = array(), array $
  */
 function os2forms_frontend_node_view($node, $view_mode, $langcode) {
   if ($node->type == 'webform') {
-    if (empty($_SERVER['HTTP_REFERER'])) {
+    if (!empty($_SERVER['HTTP_REFERER'])) {
       // Composing referrer URL that can be used for comparison.
       $referer_url_parts = parse_url($_SERVER['HTTP_REFERER']);
       $referer_page_url = $referer_url_parts['scheme'] . '://' . $referer_url_parts['host'];
