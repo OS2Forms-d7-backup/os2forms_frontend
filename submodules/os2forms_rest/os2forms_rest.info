@@ -10,6 +10,7 @@ dependencies[] = os2forms_frontend
 dependencies[] = rest_server
 dependencies[] = services
 dependencies[] = services_basic_auth
+dependencies[] = webform_service
 features[ctools][] = services:services:3
 features[features_api][] = api:2
 features[services_endpoint][] = rest
