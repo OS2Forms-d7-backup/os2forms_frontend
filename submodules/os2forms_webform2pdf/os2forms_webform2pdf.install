@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * Implements hook_enable().
+ */
+function os2forms_webform2pdf_enable() {
+  variable_set('print_pdf_pdf_tool', 'print_pdf_tcpdf|profiles/os2forms/libraries/tcpdf/tcpdf.php');
+}
+
+/**
+ * Implements hook_schema().
+ */
+function os2forms_webform2pdf_schema() {
+  $schema['os2forms_webform2pdf_custom_pdf_name'] = array(
+    'description' => 'Database containing the settings of os2forms_webform2pdf.',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'The node identifier of a webform.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'The custom PDF name.',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+    ),
+    'primary key' => array('nid'),
+  );
+
+  return $schema;
+}

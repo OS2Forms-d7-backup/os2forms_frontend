@@ -1,0 +1,10 @@
+name = OS2forms WebForm2PDF
+description = Enables WebForm2PDF to download submission as PDF or send it via email attachment
+core = 7.x
+package = OS2Forms
+version = 7.x-1.0
+dependencies[] = os2forms_frontend
+dependencies[] = print_pdf_tcpdf
+dependencies[] = webform2pdf
+features[features_api][] = api:2
+project path = sites/all/modules/os2forms/submodules

@@ -1,0 +1,60 @@
+<?php
+
+module_load_include('inc', 'os2forms_webform2pdf', 'includes/os2forms_webform2pdf.custom_pdf_name');
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function os2forms_webform2pdf_theme_registry_alter(&$theme_registry) {
+  $theme_registry['webform2pdf_filename']['function'] = 'os2forms_webform2pdf_webform2pdf_filename';
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Adds custom pdf name field.
+ */
+function os2forms_webform2pdf_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'webform2pdf_edit_form') {
+    $name = db_select('os2forms_webform2pdf_custom_pdf_name', 'b')
+      ->fields('b', array('name'))
+      ->condition('nid', $form['nid']['#value'])
+      ->execute()
+      ->fetchField();
+
+    $form['base']['os2forms_webform2pdf_custom_pdf_name'] = array(
+      '#title' => t('Custom PDF name'),
+      '#type' => 'textfield',
+      '#maxlength' => 255,
+      '#default_value' => $name,
+      '#description' => t('Provide a custom PDF name e.g. <i>myform.pdf</i>, if none is specified a default one will be used. <br>
+      <b>Please note that extension (.pdf) is a mandatory part of the name</b><br><br>
+      Available tokens: <br>
+      <b>@nid</b> => node id of the form<br>
+      <b>@sid</b> => submission id
+      '),
+    );
+
+    $form['#validate'][] = 'os2forms_webform2pdf_custom_pdf_name_form_validate';
+    $form['#submit'][] = 'os2forms_webform2pdf_custom_pdf_name_form_submit';
+  }
+}
+
+/**
+ * Implements hook_webform2pdf_available_fonts_alter().
+ */
+function os2forms_webform2pdf_webform2pdf_available_fonts_alter(&$font, $region) {
+  if (module_exists('webform2pdf')) {
+    include_once(libraries_get_path('tcpdf') . '/tcpdf.php');
+    $fontfile = TCPDF_FONTS::getFontFullPath('montserrat.php');
+    if (!TCPDF_STATIC::empty_string($fontfile) AND (@file_exists($fontfile))) {
+      $font['montserrat'] = 'Montserrat';
+    }
+    $fontfile = TCPDF_FONTS::getFontFullPath('verdana.php');
+    if (!TCPDF_STATIC::empty_string($fontfile) AND (@file_exists($fontfile))) {
+      $font['verdana'] = 'Verdana';
+    }
+
+  }
+}
+
