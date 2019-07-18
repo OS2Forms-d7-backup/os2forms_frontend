@@ -11,7 +11,7 @@ function os2forms_webform2pdf_enable() {
  * Implements hook_schema().
  */
 function os2forms_webform2pdf_schema() {
-  $schema['os2forms_webform2pdf_custom_pdf_name'] = array(
+  $schema['os2forms_webform2pdf_settings'] = array(
     'description' => 'Database containing the settings of os2forms_webform2pdf.',
     'fields' => array(
       'nid' => array(

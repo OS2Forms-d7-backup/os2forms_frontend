@@ -1,15 +1,9 @@
 <?php
 
 /**
- * Renders custom setting for SBSYS form
- *
- * @param $form
- * @param $form_state
- * @param $node
- *
- * @return mixed
+ * Renders custom setting for SBSYS form.
  */
-function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
+function os2forms_sbsys_settings_form($form, $form_state, $node) {
   $components_options = array();
   foreach ($node->webform['components'] as $id => $component) {
     $components_options[$component['form_key']] = $component['name'];
@@ -17,7 +11,7 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
   $components_options['custom'] = t('Custom text') . '...';
 
   $nemid_field_components_options =  array_merge(array('default_nemid_value' => t('Get value from nemid')), $components_options);
-  $default = bellcom_webform_sbsys_get_setting($node->nid);
+  $default = os2forms_sbsys_get_setting($node->nid);
 
   if (!$default) {
     $default['enabled'] = 0;
@@ -29,15 +23,16 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
     '#title' => t('Send SBSYS XML'),
   );
 
-  $form['anonymize_submission'] = array(
-    '#default_value' => isset($default['anonymize_submission']) ? $default['anonymize_submission'] : NULL,
+  $form['mark_synched'] = array(
+    '#default_value' => isset($default['mark_synched']) ? $default['mark_synched'] : NULL,
     '#type' => 'checkbox',
-    '#title' => t('Anonymize submission on XML sending'),
+    '#title' => t('Mark submission "synched" upon XML sending (schedule for anonymization)'),
     '#states' => array(
       'visible' => array(
         'input[name="enabled"]' => array('checked' => TRUE),
       ),
     ),
+    '#description' => t('Confirm that upon XML sending submission is marked as synched, and therefore can be anonymized. <br/><b>NB!</b> If you mark this without making sure the XML can be delivered, you will lose the data.'),
   );
 
   $form['fields'] = array(
@@ -53,23 +48,23 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
   );
 
   //adding os2formsId
-  bellcom_webform_sbsys_settings_add_field($form, 'os2formsId', $default, $components_options);
+  os2forms_sbsys_settings_add_field($form, 'os2formsId', $default, $components_options);
   //adding kle
-  bellcom_webform_sbsys_settings_add_field($form, 'kle', $default, $components_options);
+  os2forms_sbsys_settings_add_field($form, 'kle', $default, $components_options);
   //adding sagSkabelonId
-  bellcom_webform_sbsys_settings_add_field($form, 'sagSkabelonId', $default, $components_options);
+  os2forms_sbsys_settings_add_field($form, 'sagSkabelonId', $default, $components_options);
   //adding nemid_cpr
-  bellcom_webform_sbsys_settings_add_field($form, 'nemid_cpr', $default, $nemid_field_components_options, 'nemid_field');
+  os2forms_sbsys_settings_add_field($form, 'nemid_cpr', $default, $nemid_field_components_options, 'nemid_field');
   //adding nemid_name
-  bellcom_webform_sbsys_settings_add_field($form, 'nemid_name', $default, $nemid_field_components_options, 'nemid_field');
+  os2forms_sbsys_settings_add_field($form, 'nemid_name', $default, $nemid_field_components_options, 'nemid_field');
   //adding nemid_address
-  bellcom_webform_sbsys_settings_add_field($form, 'nemid_address', $default, $nemid_field_components_options, 'nemid_field');
+  os2forms_sbsys_settings_add_field($form, 'nemid_address', $default, $nemid_field_components_options, 'nemid_field');
   //adding nemid_zipcode
-  bellcom_webform_sbsys_settings_add_field($form, 'nemid_zipcode', $default, $nemid_field_components_options, 'nemid_field');
+  os2forms_sbsys_settings_add_field($form, 'nemid_zipcode', $default, $nemid_field_components_options, 'nemid_field');
   //adding nemid_city
-  bellcom_webform_sbsys_settings_add_field($form, 'nemid_city', $default, $nemid_field_components_options, 'nemid_field');
+  os2forms_sbsys_settings_add_field($form, 'nemid_city', $default, $nemid_field_components_options, 'nemid_field');
   //adding bodyText
-  bellcom_webform_sbsys_settings_add_field($form, 'bodyText', $default, $components_options, 'textarea');
+  os2forms_sbsys_settings_add_field($form, 'bodyText', $default, $components_options, 'textarea');
 
   $form['email'] = array(
     '#type' => 'fieldset',
@@ -151,7 +146,7 @@ function bellcom_webform_sbsys_settings_form($form, $form_state, $node) {
  * @param $components_options
  * @param $field_type
  */
-function bellcom_webform_sbsys_settings_add_field(&$form, $field_name, $default, $components_options, $field_type = 'textfield') {
+function os2forms_sbsys_settings_add_field(&$form, $field_name, $default, $components_options, $field_type = 'textfield') {
   $form['fields'][$field_name] = array(
     '#type' => 'select',
     '#title' => t('@field_name value', array('@field_name' => $field_name)),
@@ -195,12 +190,12 @@ function bellcom_webform_sbsys_settings_add_field(&$form, $field_name, $default,
 }
 
 /**
- * bellcom_webform_sbsys_settings_form_submit: Implements submit hook
+ * os2forms_sbsys_settings_form_submit: Implements submit hook
  *
  * @param $form
  * @param $form_state
  */
-function bellcom_webform_sbsys_settings_form_submit($form, &$form_state) {
+function os2forms_sbsys_settings_form_submit($form, &$form_state) {
   $save = $form_state['values'];
   unset($save['nid']);
   unset($save['enabled']);
@@ -217,33 +212,33 @@ function bellcom_webform_sbsys_settings_form_submit($form, &$form_state) {
 
     if ($form_state['values']['enabled']) {
 
-      $bellcom_webform_sbsys_settings['nid'] = $form_state['values']['nid'];
-      $bellcom_webform_sbsys_settings['enabled'] = $form_state['values']['enabled'];
-      $bellcom_webform_sbsys_settings['data'] = $save;
+      $sbsys_settings['nid'] = $form_state['values']['nid'];
+      $sbsys_settings['enabled'] = $form_state['values']['enabled'];
+      $sbsys_settings['data'] = $save;
 
-      drupal_write_record('bellcom_webform', $bellcom_webform_sbsys_settings);
+      drupal_write_record('os2forms_sbsys_settings', $sbsys_settings);
     }
   }
 
   if (!isset($form_state['values']['new'])) {
     // update settings
-    $bellcom_webform_sbsys_settings['nid'] = $form_state['values']['nid'];
-    $bellcom_webform_sbsys_settings['enabled'] = $form_state['values']['enabled'];
-    $bellcom_webform_sbsys_settings['data'] = $save;
-    drupal_write_record('bellcom_webform', $bellcom_webform_sbsys_settings, 'nid');
+    $sbsys_settings['nid'] = $form_state['values']['nid'];
+    $sbsys_settings['enabled'] = $form_state['values']['enabled'];
+    $sbsys_settings['data'] = $save;
+    drupal_write_record('os2forms_sbsys_settings', $sbsys_settings, 'nid');
   }
 }
 
 /**
- * Get bellcom_webform setting for the specified nid.
+ * Get os2forms_sbsys setting for the specified nid.
  *
  * @param $nid
  *
  * @return array
  */
-function bellcom_webform_sbsys_get_setting($nid) {
-  $default = db_select('bellcom_webform', 'bw')
-    ->fields('bw')
+function os2forms_sbsys_get_setting($nid) {
+  $default = db_select('os2forms_sbsys_settings', 'os')
+    ->fields('os')
     ->condition('nid', $nid, '=')
     ->execute()
     ->fetchAssoc();
@@ -259,6 +254,18 @@ function bellcom_webform_sbsys_get_setting($nid) {
 }
 
 /**
+ * Removes sbsys setting from database.
+ *
+ * @param int $nid
+ *   Node id.
+ */
+function os2forms_sbsys_delete_setting($nid) {
+  db_delete('os2forms_sbsys_settings')
+    ->condition('nid', $nid, '=')
+    ->execute();
+}
+
+/**
  * Gets the actual value of the setting by name.
  * If custom text is used, then the custom text will be returned.
  *
@@ -270,12 +277,12 @@ function bellcom_webform_sbsys_get_setting($nid) {
  *
  * @return mixed
  */
-function bellcom_webform_sbsys_get_setting_value($name, $config, $params) {
+function os2forms_sbsys_get_setting_value($name, $config, $params) {
   if ($config[$name] == 'default_nemid_value') {
     return 'default_nemid_value';
   }
   if ($config[$name] != 'custom') {
-    return htmlspecialchars(bellcom_webform_module_sbsys_xml_get_value_by_form_key($config[$name], $params));
+    return htmlspecialchars(os2forms_sbsys_xml_get_value_by_form_key($config[$name], $params));
   }
   else {
     return htmlspecialchars($config[$name . "_custom"]);
@@ -288,9 +295,9 @@ function bellcom_webform_sbsys_get_setting_value($name, $config, $params) {
  * @param $params
  * @return string
  */
-function bellcom_webform_module_sbsys_xml($params) {
-  $nemid_cpr = bellcom_webform_module_sbsys_xml_get_value_by_type('nemid_cpr', $params);
-  $nemid_com_cvr = bellcom_webform_module_sbsys_xml_get_value_by_type('nemid_com_cvr', $params);
+function os2forms_sbsys_generate_xml($params) {
+  $nemid_cpr = os2forms_sbsys_xml_get_value_by_type('nemid_cpr', $params);
+  $nemid_com_cvr = os2forms_sbsys_xml_get_value_by_type('nemid_com_cvr', $params);
   if (isset($nemid_com_cvr) && !empty($nemid_com_cvr)) {
     $message = cvr_serviceplatformen_query_info($nemid_com_cvr);
     $nemid_name = htmlspecialchars($message['company_name']);
@@ -306,16 +313,16 @@ function bellcom_webform_module_sbsys_xml($params) {
     $nemid_zipcode = htmlspecialchars($message['zipcode']);
   }
 
-  $config = bellcom_webform_sbsys_get_setting($params['node']->nid);
-  $os2formsId = bellcom_webform_sbsys_get_setting_value('os2formsId', $config, $params);
-  $kle = bellcom_webform_sbsys_get_setting_value('kle', $config, $params);
-  $sagSkabelonId = bellcom_webform_sbsys_get_setting_value('sagSkabelonId', $config, $params);
-  $bodyText = bellcom_webform_sbsys_get_setting_value('bodyText', $config, $params);
-  $nemid_cpr_mapping_value = bellcom_webform_sbsys_get_setting_value('nemid_cpr', $config, $params);
-  $nemid_name_mapping_value = bellcom_webform_sbsys_get_setting_value('nemid_name', $config, $params);
-  $nemid_address_mapping_value = bellcom_webform_sbsys_get_setting_value('nemid_address', $config, $params);
-  $nemid_zipcode_mapping_value = bellcom_webform_sbsys_get_setting_value('nemid_zipcode', $config, $params);
-  $nemid_city_mapping_value = bellcom_webform_sbsys_get_setting_value('nemid_city', $config, $params);
+  $config = os2forms_sbsys_get_setting($params['node']->nid);
+  $os2formsId = os2forms_sbsys_get_setting_value('os2formsId', $config, $params);
+  $kle = os2forms_sbsys_get_setting_value('kle', $config, $params);
+  $sagSkabelonId = os2forms_sbsys_get_setting_value('sagSkabelonId', $config, $params);
+  $bodyText = os2forms_sbsys_get_setting_value('bodyText', $config, $params);
+  $nemid_cpr_mapping_value = os2forms_sbsys_get_setting_value('nemid_cpr', $config, $params);
+  $nemid_name_mapping_value = os2forms_sbsys_get_setting_value('nemid_name', $config, $params);
+  $nemid_address_mapping_value = os2forms_sbsys_get_setting_value('nemid_address', $config, $params);
+  $nemid_zipcode_mapping_value = os2forms_sbsys_get_setting_value('nemid_zipcode', $config, $params);
+  $nemid_city_mapping_value = os2forms_sbsys_get_setting_value('nemid_city', $config, $params);
   $maa_sendes_til_dff = isset($config['MaaSendesTilDFF']) ? $config['MaaSendesTilDFF'] : 'ja';
   
   if ($nemid_cpr_mapping_value && $nemid_cpr_mapping_value != 'default_nemid_value') {
@@ -335,7 +342,7 @@ function bellcom_webform_module_sbsys_xml($params) {
   }
   $webform = node_load($params['node']->nid);
   $webform_title = htmlspecialchars($webform->title);
-  $fields = bellcom_webform_module_sbsys_xml_get_fields_to_list($params);
+  $fields = os2forms_sbsys_xml_get_fields_to_list($params);
 
   if (isset($fields['antal_rum_max'])) {
     $maxRoom = htmlspecialchars($fields['antal_rum_max']);
@@ -404,7 +411,7 @@ function bellcom_webform_module_sbsys_xml($params) {
  * @param $params
  * @return int|string
  */
-function bellcom_webform_module_sbsys_xml_get_cid_by_type($type, $params) {
+function os2forms_sbsys_xml_get_cid_by_type($type, $params) {
   $components = $params['node']->webform['components'];
 
   foreach($components as $cid => $component) {
@@ -421,7 +428,7 @@ function bellcom_webform_module_sbsys_xml_get_cid_by_type($type, $params) {
  * @param $params
  * @return int|string
  */
-function bellcom_webform_module_sbsys_xml_get_cid_by_form_key($form_key, $params) {
+function os2forms_sbsys_xml_get_cid_by_form_key($form_key, $params) {
   $components = $params['node']->webform['components'];
 
   foreach($components as $cid => $component) {
@@ -439,10 +446,10 @@ function bellcom_webform_module_sbsys_xml_get_cid_by_form_key($form_key, $params
  * @param $params
  * @return mixed
  */
-function bellcom_webform_module_sbsys_xml_get_value_by_type($type, $params) {
+function os2forms_sbsys_xml_get_value_by_type($type, $params) {
   $data = $params['submission']->data;
 
-  $cid = bellcom_webform_module_sbsys_xml_get_cid_by_type($type, $params);
+  $cid = os2forms_sbsys_xml_get_cid_by_type($type, $params);
   if ($cid) {
     return reset($data[$cid]);
   }
@@ -455,10 +462,10 @@ function bellcom_webform_module_sbsys_xml_get_value_by_type($type, $params) {
  * @param $params
  * @return mixed
  */
-function bellcom_webform_module_sbsys_xml_get_value_by_form_key($form_key, $params) {
+function os2forms_sbsys_xml_get_value_by_form_key($form_key, $params) {
   $data = $params['submission']->data;
 
-  $cid = bellcom_webform_module_sbsys_xml_get_cid_by_form_key($form_key, $params);
+  $cid = os2forms_sbsys_xml_get_cid_by_form_key($form_key, $params);
   if ($cid) {
     return reset($data[$cid]);
   }
@@ -471,7 +478,7 @@ function bellcom_webform_module_sbsys_xml_get_value_by_form_key($form_key, $para
  * @param $params
  * @return array
  */
-function bellcom_webform_module_sbsys_xml_get_fields_to_list($params) {
+function os2forms_sbsys_xml_get_fields_to_list($params) {
   $fields_to_list = array();
   $data = $params['submission']->data;
   foreach ($params['node']->webform['components'] as $cid => $element) {

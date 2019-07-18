@@ -1,0 +1,105 @@
+<?php
+
+module_load_include('inc', 'os2forms_doc', 'includes/os2forms_doc.generate_doc');
+
+/**
+ * Implements hook_menu().
+ */
+function os2forms_doc_menu() {
+  $items = array();
+
+  $items['node/%webform_menu/webform/os2forms_doc'] = array(
+    'title' => 'OS2Forms Generate DOC',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('os2forms_doc_settings_form', 1),
+    'access arguments' => array('edit webform components'),
+    'weight' => 4,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_mail_alter().
+ */
+function os2forms_doc_mail_alter(&$message) {
+  if (($message['id'] == 'webform_submission') && isset($message['params']['node']) && isset($message['params']['submission'])) {
+    $node = $message['params']['node'];
+    $submission = $message['params']['submission'];
+
+    $attachments = array();
+
+    // Generate DOC config.
+    $generate_doc_config = os2forms_doc_get_setting($node->nid);
+    if (isset($generate_doc_config) && $generate_doc_config['enabled']) {
+      // Creating a file in a temporary dir.
+      $file_uri = os2forms_doc_create_file($node, $submission);
+      $file_size = filesize($file_uri);
+      $handle = fopen($file_uri, "rb");
+      $content = fread($handle, $file_size);
+      fclose($handle);
+
+      $attachment = new stdClass;
+      $attachment->filecontent = $content;
+      $attachment->filename = basename($file_uri);
+      $attachment->filemime = mime_content_type($file_uri);
+
+      $attachments[] = $attachment;
+
+      // Deleting the file in the end.
+      file_unmanaged_delete($file_uri);
+    }
+
+    if (!empty($attachments)) {
+      $html_capable = variable_get('webform_email_html_capable', FALSE);
+
+      if ($html_capable) {
+        if (module_exists('mimemail')) {
+          foreach($attachments as $attachment) {
+            $message['params']['attachments'][] = $attachment;
+          }
+        }
+      }
+      else {
+        foreach($attachments as $attachment) {
+          //find existing trenner
+          preg_match('/\multipart\/mixed;\ boundary=\"(.*)\"/', $message['headers']['Content-Type'], $matches);
+          $trenner = $matches[1];
+
+          //remove message end
+          $message['body'][0] = str_replace("--$trenner--", '', $message['body'][0]);
+
+          //and new content
+          $message['body'][0] .= "\n\n--" . $trenner . "\n";
+          $message['body'][0] .= "Content-Type: " . $attachment->filemime . "; name=\"" . $attachment->filename . "\"\n";
+          $message['body'][0] .= "Content-Transfer-Encoding: base64\n";
+          $message['body'][0] .= "Content-Disposition: attachment; filename=\"" . $attachment->filename . "\"\n\n";
+          $message['body'][0] .= chunk_split(base64_encode($attachment->filecontent));
+          $message['body'][0] .= "\n\n";
+          $message['body'][0] .= "--" . $trenner . "--";
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function os2forms_doc_node_delete($node) {
+  os2forms_doc_delete_setting($node->nid);
+}
+
+///**
+// * Implements hook_module_implements_alter().
+// *
+// * Make sure that our mail_alter is called AFTER the same hook provided in webform2pdf.
+// */
+//function os2forms_doc_module_implements_alter(&$implementations, $hook) {
+//  if ($hook == 'mail_alter') {
+//    $group = $implementations['os2forms_doc'];
+//    unset($implementations['os2forms_doc']);
+//    $implementations['os2forms_doc'] = $group;
+//  }
+//}

@@ -1,111 +1,69 @@
 <?php
 
 /**
- * Implements hook_schema().
+ * Migration procedure - migrates all the data from bellcom_webform database tables to new tables. Required modules will be enabled automatically.
  */
-function bellcom_webform_schema() {
-  $schema['bellcom_webform'] = array(
-    'description' => 'Database containing the settings of bellcom_webform.',
-    'fields' => array(
-      'nid' => array(
-        'description' => 'The node identifier of a bellcom_webform.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'enabled' => array(
-        'description' => 'Show if a pdf will be generated: 0: OFF, 1: ON.',
-        'type' => 'int',
-        'size' => 'tiny',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-
-      'data' => array(
-        'type' => 'blob',
-        'size' => 'big',
-        'serialize' => TRUE,
-        'description' => 'Serialized data containing the bellcom_webform properties.',
-      ),
-    ),
-    'primary key' => array('nid'),
-  );
-
-  $schema['bellcom_webform_custom_pdf_name'] = array(
-    'description' => 'Database containing the settings of bellcom_webform.',
-    'fields' => array(
-      'nid' => array(
-        'description' => 'The node identifier of a bellcom_webform.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'name' => array(
-        'description' => 'The custom PDF name.',
-        'type' => 'varchar',
-        'length' => 255,
-      ),
-    ),
-    'primary key' => array('nid'),
-  );
-
-  $schema['bellcom_webform_generate_doc'] = array(
-    'description' => 'Database containing the settings of bellcom_webform generate doc.',
-    'fields' => array(
-      'nid' => array(
-        'description' => 'The node identifier of a bellcom_webform.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'enabled' => array(
-        'description' => 'Show if doc generation is enabled: 0: OFF, 1: ON.',
-        'type' => 'int',
-        'size' => 'tiny',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-    ),
-    'primary key' => array('nid'),
-  );
-
-  return $schema;
-}
-
-/**
- * Creates the database schema for storing custom names for PDF rendered files
- */
+//function bellcom_webform_update_7101(&$sandbox) {
 function bellcom_webform_update_7101() {
-  $schema['bellcom_webform_custom_pdf_name'] = array(
-    'description' => 'Database containing the settings of bellcom_webform.',
-    'fields' => array(
-      'nid' => array(
-        'description' => 'The node identifier of a bellcom_webform.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'name' => array(
-        'description' => 'The custom PDF name.',
-        'type' => 'varchar',
-        'length' => 255,
-      ),
-    ),
-    'primary key' => array('nid'),
+  $module_list = array(
+    'os2forms_sbsys',
+    'os2forms_webform2pdf',
+    'os2forms_doc',
   );
+  module_enable($module_list, TRUE);
 
-  db_create_table('bellcom_webform_custom_pdf_name', $schema['bellcom_webform_custom_pdf_name']);
-}
+  // Migrating bellcom_webform entries.
+  $bellcom_webform_entries = db_select('bellcom_webform', 'bw')
+    ->fields('bw')
+    ->execute()
+    ->fetchAll();
 
-/**
- * Implement hook_update_N().
- *
- * Creates the database schema for storing custom names for PDF rendered files
- */
-function bellcom_webform_update_7102() {
-  $schema = bellcom_webform_schema();
+  foreach ($bellcom_webform_entries as $entry) {
+    $entry_array = (array) $entry;
 
-  db_create_table('bellcom_webform_generate_doc', $schema['bellcom_webform_generate_doc']);
+    // Skipping nodes that don't exist anymore.
+    if (node_load($entry_array['nid'])) {
+      $data = unserialize($entry_array['data']);
+
+      $data['mark_synched'] = $data['anonymize_submission'];
+      unset($data['anonymize_submission']);
+      $entry_array['data'] = $data;
+
+      drupal_write_record('os2forms_sbsys_settings', $entry_array);
+    }
+  }
+
+  // Migrating bellcom_webform_custom_pdf_name entries.
+  $bellcom_webform_custom_pdf_entries = db_select('bellcom_webform_custom_pdf_name', 'bw')
+    ->fields('bw')
+    ->execute()
+    ->fetchAll();
+
+  foreach ($bellcom_webform_custom_pdf_entries as $entry) {
+    $entry_array = (array) $entry;
+
+    // Skipping nodes that don't exist anymore, or name is empty.
+    if (node_load($entry_array['nid']) && !empty($entry_array['name'])) {
+      drupal_write_record('os2forms_webform2pdf_settings', $entry_array);
+    }
+  }
+
+  // Migrating bellcom_webform_generate_doc entries.
+  $bellcom_webform_generate_doc = db_select('bellcom_webform_generate_doc', 'bw')
+    ->fields('bw')
+    ->execute()
+    ->fetchAll();
+
+  foreach ($bellcom_webform_generate_doc as $entry) {
+    $entry_array = (array) $entry;
+
+    // Skipping nodes that don't exist anymore.
+    if (node_load($entry_array['nid'])) {
+      drupal_write_record('os2forms_doc_settings', $entry_array);
+    }
+  }
+
+  drupal_flush_all_caches();
+
+  drupal_set_message('bellcom_webform: Migration complete. Please uninstall this module.');
 }

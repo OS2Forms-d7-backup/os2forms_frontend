@@ -1,10 +1,5 @@
-name = Bellcom Webform
-description = Extending functionality of webform
+name = Bellcom Webform (OBSOLETE)
+description = Due to os2forms_frontend module refactoring, this module contains clean up and migration procedures. It will be completely removed at later stages
 core = 7.x
 version = 7.x-1.1
 package = Bellcom
-stylesheets[all][] = css/bellcom_webform.css
-dependencies[] = phpword
-dependencies[] = webform
-dependencies[] = webform2pdf
-dependencies[] = vcv_serviceplatformen

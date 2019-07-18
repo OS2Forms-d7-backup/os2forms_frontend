@@ -16,7 +16,7 @@ function os2forms_webform2pdf_theme_registry_alter(&$theme_registry) {
  */
 function os2forms_webform2pdf_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'webform2pdf_edit_form') {
-    $name = db_select('os2forms_webform2pdf_custom_pdf_name', 'b')
+    $name = db_select('os2forms_webform2pdf_settings', 'b')
       ->fields('b', array('name'))
       ->condition('nid', $form['nid']['#value'])
       ->execute()
@@ -41,6 +41,13 @@ function os2forms_webform2pdf_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
+ * Implements hook_node_delete().
+ */
+function os2forms_webform2pdf_node_delete($node) {
+  os2forms_webform2pdf_delete_setting($node->nid);
+}
+
+/**
  * Implements hook_webform2pdf_available_fonts_alter().
  */
 function os2forms_webform2pdf_webform2pdf_available_fonts_alter(&$font, $region) {
@@ -54,7 +61,5 @@ function os2forms_webform2pdf_webform2pdf_available_fonts_alter(&$font, $region)
     if (!TCPDF_STATIC::empty_string($fontfile) AND (@file_exists($fontfile))) {
       $font['verdana'] = 'Verdana';
     }
-
   }
 }
-

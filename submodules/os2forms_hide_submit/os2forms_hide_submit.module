@@ -1,0 +1,12 @@
+<?php
+
+/**
+ * Implemenets hook_hide_submit_alter().
+ */
+function bellcom_webform_hide_submit_alter(&$hide_submit_settings) {
+  $current_path = current_path();
+
+  if (strpos($current_path, 'node/') !== 0) {
+    $hide_submit_settings['hide_submit']['hide_submit_status'] = FALSE;
+  }
+}

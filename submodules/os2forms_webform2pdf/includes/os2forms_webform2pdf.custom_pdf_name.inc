@@ -18,27 +18,27 @@ function os2forms_webform2pdf_custom_pdf_name_form_submit($form, $form_state) {
   $fields['nid'] = $nid;
   $fields['name'] = $form_state['values']['os2forms_webform2pdf_custom_pdf_name'];
 
-  $query = db_select('os2forms_webform2pdf_custom_pdf_name');
+  $query = db_select('os2forms_webform2pdf_settings');
   $query->condition('nid', $nid);
   $query->addExpression('COUNT(*)');
   $rows = $query->execute()->fetchField();
 
   if ($rows > 0) {
     if (!empty($fields['name'])) {
-      db_update('os2forms_webform2pdf_custom_pdf_name')
+      db_update('os2forms_webform2pdf_settings')
         ->fields($fields)
         ->condition('nid', $nid)
         ->execute();
     }
     else {
-      db_delete('os2forms_webform2pdf_custom_pdf_name')
+      db_delete('os2forms_webform2pdf_settings')
         ->condition('nid', $nid)
         ->execute();
     }
   }
   else {
     if (!empty($fields['name'])) {
-      db_insert('os2forms_webform2pdf_custom_pdf_name')
+      db_insert('os2forms_webform2pdf_settings')
         ->fields($fields)
         ->execute();
     }
@@ -52,7 +52,7 @@ function os2forms_webform2pdf_custom_pdf_name_form_submit($form, $form_state) {
  * @return string
  */
 function os2forms_webform2pdf_webform2pdf_filename($vars) {
-  $name = db_select('os2forms_webform2pdf_custom_pdf_name', 'b')
+  $name = db_select('os2forms_webform2pdf_settings', 'b')
     ->fields('b', array('name'))
     ->condition('nid', $vars['node']->nid)
     ->execute()
@@ -65,8 +65,21 @@ function os2forms_webform2pdf_webform2pdf_filename($vars) {
     return $name;
   } else {
     // call to a default function
-    module_load_include('inc', 'webform2pdf.theme', 'includes/webform2pdf.theme');
+    module_load_include('inc', 'webform2pdf', 'includes/webform2pdf.theme');
 
     return theme_webform2pdf_filename($vars);
   }
+}
+
+
+/**
+ * Removes os2forms_webform2pdf setting from database.
+ *
+ * @param int $nid
+ *   Node id.
+ */
+function os2forms_webform2pdf_delete_setting($nid) {
+  db_delete('os2forms_webform2pdf_settings')
+    ->condition('nid', $nid, '=')
+    ->execute();
 }

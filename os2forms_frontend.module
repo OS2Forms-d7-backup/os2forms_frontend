@@ -7,6 +7,13 @@
 module_load_include('inc', 'os2forms_frontend', 'includes/os2forms_frontend.utils');
 
 /**
+ * Implements hook_enable().
+ */
+function os2forms_frontend_enable() {
+  variable_set('webform_email_html_capable', TRUE);
+}
+
+/**
  * Implements hook_cron().
  */
 function os2forms_frontend_cron() {

@@ -1,0 +1,9 @@
+name = OS2forms DOC
+description = Enables form submission to be emailed as generated DOC file
+core = 7.x
+package = OS2Forms
+version = 7.x-1.0
+dependencies[] = os2forms_frontend
+dependencies[] = phpword
+features[features_api][] = api:2
+project path = sites/all/modules/os2forms/submodules

@@ -9,8 +9,8 @@
  *
  * @return mixed
  */
-function bellcom_webform_generate_doc_settings_form($form, $form_state, $node) {
-  $default = bellcom_webform_generate_doc_get_setting($node->nid);
+function os2forms_doc_settings_form($form, $form_state, $node) {
+  $default = os2forms_doc_get_setting($node->nid);
 
   if (!$default) {
     $default['enabled'] = 0;
@@ -57,7 +57,7 @@ function bellcom_webform_generate_doc_settings_form($form, $form_state, $node) {
  * @return string
  *   The URI of the created file.
  */
-function bellcom_webform_generate_doc_create_file($webform, $submission) {
+function os2forms_doc_create_file($webform, $submission) {
   libraries_load('PHPWord');
 
   // Creating the new document.
@@ -89,12 +89,12 @@ function bellcom_webform_generate_doc_create_file($webform, $submission) {
 }
 
 /**
- * Implements submit hook for bellcom_webform_generate_doc_settings_form.
+ * Implements submit hook for os2forms_doc_settings_form.
  *
  * @param $form
  * @param $form_state
  */
-function bellcom_webform_generate_doc_settings_form_submit($form, &$form_state) {
+function os2forms_doc_settings_form_submit($form, &$form_state) {
   $settings = array();
 
   $settings['nid'] = $form_state['values']['nid'];
@@ -102,23 +102,23 @@ function bellcom_webform_generate_doc_settings_form_submit($form, &$form_state) 
 
   // First enabled
   if (isset($form_state['values']['new'])) {
-    drupal_write_record('bellcom_webform_generate_doc', $settings);
+    drupal_write_record('os2forms_doc_settings', $settings);
   }
   else {
-    drupal_write_record('bellcom_webform_generate_doc', $settings, 'nid');
+    drupal_write_record('os2forms_doc_settings', $settings, 'nid');
   }
 }
 
 /**
- * Get bellcom_webform setting for the specified nid.
+ * Get webform setting for the specified nid.
  *
  * @param $nid
  *
  * @return array
  */
-function bellcom_webform_generate_doc_get_setting($nid) {
-  $default = db_select('bellcom_webform_generate_doc', 'bw')
-    ->fields('bw')
+function os2forms_doc_get_setting($nid) {
+  $default = db_select('os2forms_doc_settings', 'od')
+    ->fields('od')
     ->condition('nid', $nid, '=')
     ->execute()
     ->fetchAssoc();
@@ -128,4 +128,16 @@ function bellcom_webform_generate_doc_get_setting($nid) {
   }
 
   return array();
+}
+
+/**
+ * Removes os2forms_doc setting from database.
+ *
+ * @param int $nid
+ *   Node id.
+ */
+function os2forms_doc_delete_setting($nid) {
+  db_delete('os2forms_doc_settings')
+    ->condition('nid', $nid, '=')
+    ->execute();
 }
