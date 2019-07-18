@@ -2,3 +2,4 @@ name = OS2Forms address autocomplete field
 description = Address autocomplete field for Webforms (integration with https://dawa.aws.dk)
 core = 7.x
 package = OS2Forms
+dependencies[] = os2forms_frontend
