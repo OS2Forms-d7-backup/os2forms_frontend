@@ -2,6 +2,7 @@ name = OS2forms NemID
 core = 7.x
 package = OS2Forms
 version = 7.x-1.0
+dependencies[] = os2forms_frontend
 dependencies[] = nemid
 dependencies[] = nemid_login
 dependencies[] = nemlogin
