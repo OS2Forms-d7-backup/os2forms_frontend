@@ -3,8 +3,7 @@
 /**
  * Migration procedure - migrates all the data from bellcom_webform database tables to new tables. Required modules will be enabled automatically.
  */
-//function bellcom_webform_update_7101(&$sandbox) {
-function bellcom_webform_update_7101() {
+function bellcom_webform_update_7101(&$sandbox) {
   $module_list = array(
     'os2forms_sbsys',
     'os2forms_webform2pdf',
