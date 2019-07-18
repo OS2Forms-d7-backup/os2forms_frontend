@@ -1,4 +1,4 @@
-name = OS2Forms REST
+name = OS2Forms REST (for Webform service 3.x)
 description = Enabled REST endpoint for OS2Forms communication
 core = 7.x
 package = OS2Forms
@@ -10,7 +10,7 @@ dependencies[] = os2forms_frontend
 dependencies[] = rest_server
 dependencies[] = services
 dependencies[] = services_basic_auth
-dependencies[] = webform_service
+dependencies[] = webform_service (<4.x)
 features[ctools][] = services:services:3
 features[features_api][] = api:2
 features[services_endpoint][] = rest
