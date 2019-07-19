@@ -13,8 +13,7 @@
 function _os2forms_rest_submission_resource_definition() {
   $resources['os2forms_submission'] = array(
     'operations' => array(
-      // Deletes the queue item only that represents the the actual
-      // content (node or taxonomy_term).
+      // Marks submission as synched.
       'delete' => array(
         'file' => array(
           'type' => 'inc',
