@@ -33,6 +33,31 @@ function os2forms_frontend_schema() {
     'primary key' => array('uuid'),
   );
 
+  $schema['os2forms_frontend_webform_settings'] = array(
+    'description' => 'Table for storing settings related to webform, is to be used by submodules.',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'The node identifier of a webform.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'submodule' => array(
+        'description' => 'Name of the submodule that stores the settings.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'data' => array(
+        'type' => 'blob',
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'Serialized data containing the webform properties.',
+      ),
+    ),
+    'primary key' => array('nid', 'submodule'),
+  );
+
   return $schema;
 }
 
@@ -42,5 +67,14 @@ function os2forms_frontend_schema() {
 function os2forms_frontend_update_7101(&$sandbox) {
   if (!db_table_exists('os2forms_frontend_unanonymized_submissions')) {
     db_create_table('os2forms_frontend_unanonymized_submissions', drupal_get_schema_unprocessed('os2forms_frontend', 'os2forms_frontend_unanonymized_submissions'));
+  }
+}
+
+/**
+ * Adding the os2forms_frontend_webform_settings table.
+ */
+function os2forms_frontend_update_7102(&$sandbox) {
+  if (!db_table_exists('os2forms_frontend_webform_settings')) {
+    db_create_table('os2forms_frontend_webform_settings', drupal_get_schema_unprocessed('os2forms_frontend', 'os2forms_frontend_webform_settings'));
   }
 }

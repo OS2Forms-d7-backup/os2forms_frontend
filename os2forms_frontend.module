@@ -5,6 +5,28 @@
  */
 
 module_load_include('inc', 'os2forms_frontend', 'includes/os2forms_frontend.utils');
+module_load_include('inc', 'os2forms_frontend', 'includes/os2forms_frontend.pages');
+
+/**
+ * Implements hook_menu().
+ */
+function os2forms_frontend_menu() {
+  $items = array();
+
+  $items['node/%webform_menu/webform/os2forms_settings'] = array(
+    'title' => t('OS2Forms settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('os2forms_settings_form', 1),
+    'access arguments' => array('edit webform components'),
+    'weight' => 4,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+//TODO: add auto removing of node settings after node is deleted.
+//TODO: remove node settings of submodule uninstall.
 
 /**
  * Implements hook_enable().

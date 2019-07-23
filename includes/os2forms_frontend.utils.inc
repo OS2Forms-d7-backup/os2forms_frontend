@@ -129,3 +129,97 @@ function os2forms_frontend_anonymize_submission($webform_nid, $sid) {
   // Deleting the submission from a queue.
   os2forms_frontend_delete_unanonymized_submission($submission->uuid);
 }
+
+/**
+ * Get os2forms_frontend setting for the specified webform.
+ *
+ * @param int $nid
+ *   Node is of the node.
+ * @param string $submodule
+ *   Name of the submodule.
+ *
+ * @return array
+ *   Settings stored for this submodule.
+ */
+function os2forms_frontend_webform_get_setting($nid, $submodule) {
+  $default = db_select('os2forms_frontend_webform_settings', 'of')
+    ->fields('of')
+    ->condition('nid', $nid, '=')
+    ->condition('submodule', $submodule, '=')
+    ->execute()
+    ->fetchAssoc();
+
+  if ($default) {
+    $data = unserialize($default['data']);
+    return $data;
+  }
+
+  return array();
+}
+
+/**
+ * Update os2forms_frontend setting for the specified webform.
+ *
+ * If data is empty, setting entry will be deleted instead.
+ *
+ * @param int $nid
+ *   Node is of the node.
+ * @param string $submodule
+ *   Name of the submodule.
+ * @param array $data
+ *   Array of data to be saved.
+ */
+function os2forms_frontend_webform_save_setting($nid, $submodule, $data) {
+  $query = db_select('os2forms_frontend_webform_settings');
+  $query->condition('nid', $nid);
+  $query->condition('submodule', $submodule);
+  $query->addExpression('COUNT(*)');
+  $rows = $query->execute()->fetchField();
+
+  $fields = array(
+    'nid' => $nid,
+    'submodule' => $submodule,
+    'data' => serialize($data),
+  );
+
+  if ($rows > 0) {
+    if (!empty($data)) {
+      db_update('os2forms_frontend_webform_settings')
+        ->fields($fields)
+        ->condition('nid', $nid)
+        ->execute();
+    }
+    else {
+      os2forms_frontend_webform_delete_setting($nid, $submodule);
+    }
+  }
+  else {
+    if (!empty($data)) {
+      db_insert('os2forms_frontend_webform_settings')
+        ->fields($fields)
+        ->execute();
+    }
+  }
+}
+
+/**
+ * Removes os2forms_frontend setting for the specified webform.
+ *
+ * @param int $nid
+ *   Node is of the node.
+ * @param string $submodule
+ *   Name of the submodule.
+ */
+function os2forms_frontend_webform_delete_setting($nid, $submodule = NULL) {
+  $query = db_delete('os2forms_frontend_webform_settings')
+    ->condition('nid', $nid, '=');
+
+  if ($submodule) {
+    $query->condition('submodule', $submodule, '=');
+  }
+
+  $query->execute();
+}
+
+
+
