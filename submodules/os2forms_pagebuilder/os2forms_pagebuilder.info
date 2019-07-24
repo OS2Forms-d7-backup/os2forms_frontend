@@ -6,6 +6,7 @@ dependencies[] = entityreference
 dependencies[] = features
 dependencies[] = inline_entity_form
 dependencies[] = node
+dependencies[] = os2forms_frontend
 dependencies[] = paragraphs
 dependencies[] = text
 features[features_api][] = api:2
