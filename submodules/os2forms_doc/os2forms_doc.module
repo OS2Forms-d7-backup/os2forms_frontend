@@ -1,6 +1,6 @@
 <?php
 
-module_load_include('inc', 'os2forms_doc', 'includes/os2forms_doc.generate_doc');
+module_load_include('inc', 'os2forms_doc', 'includes/os2forms_doc.utils');
 
 /**
  * Implements hook_menu().
@@ -31,7 +31,7 @@ function os2forms_doc_mail_alter(&$message) {
     $attachments = array();
 
     // Generate DOC config.
-    $generate_doc_config = os2forms_doc_get_setting($node->nid);
+    $generate_doc_config = os2forms_frontend_webform_get_setting($node->nid, 'os2forms_doc');
     if (isset($generate_doc_config) && $generate_doc_config['enabled']) {
       // Creating a file in a temporary dir.
       $file_uri = os2forms_doc_create_file($node, $submission);
@@ -83,23 +83,3 @@ function os2forms_doc_mail_alter(&$message) {
     }
   }
 }
-
-/**
- * Implements hook_node_delete().
- */
-function os2forms_doc_node_delete($node) {
-  os2forms_doc_delete_setting($node->nid);
-}
-
-///**
-// * Implements hook_module_implements_alter().
-// *
-// * Make sure that our mail_alter is called AFTER the same hook provided in webform2pdf.
-// */
-//function os2forms_doc_module_implements_alter(&$implementations, $hook) {
-//  if ($hook == 'mail_alter') {
-//    $group = $implementations['os2forms_doc'];
-//    unset($implementations['os2forms_doc']);
-//    $implementations['os2forms_doc'] = $group;
-//  }
-//}

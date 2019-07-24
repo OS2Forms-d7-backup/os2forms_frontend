@@ -8,26 +8,8 @@ function os2forms_webform2pdf_enable() {
 }
 
 /**
- * Implements hook_schema().
+ * Implements hook_uninstall().
  */
-function os2forms_webform2pdf_schema() {
-  $schema['os2forms_webform2pdf_settings'] = array(
-    'description' => 'Database containing the settings of os2forms_webform2pdf.',
-    'fields' => array(
-      'nid' => array(
-        'description' => 'The node identifier of a webform.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'name' => array(
-        'description' => 'The custom PDF name.',
-        'type' => 'varchar',
-        'length' => 255,
-      ),
-    ),
-    'primary key' => array('nid'),
-  );
-
-  return $schema;
+function os2forms_webform2pdf_uninstall() {
+  os2forms_frontend_submodule_delete_setting('os2forms_webform2pdf');
 }

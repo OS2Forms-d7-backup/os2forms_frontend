@@ -1,5 +1,6 @@
 <?php
 
+module_load_include('inc', 'os2forms_sbsys', 'includes/os2forms_sbsys.utils');
 module_load_include('inc', 'os2forms_sbsys', 'includes/os2forms_sbsys.xml_generation');
 
 /**
@@ -21,13 +22,6 @@ function os2forms_sbsys_menu() {
 }
 
 /**
- * Implements hook_node_delete().
- */
-function os2forms_sbsys_node_delete($node) {
-  os2forms_sbsys_delete_setting($node->nid);
-}
-
-/**
  * Implements hook_mail_alter().
  */
 function os2forms_sbsys_mail_alter(&$message) {
@@ -38,7 +32,7 @@ function os2forms_sbsys_mail_alter(&$message) {
     $attachments = array();
 
     // SBSYS Config.
-    $sbsys_config = os2forms_sbsys_get_setting($node->nid);
+    $sbsys_config = os2forms_frontend_webform_get_setting($node->nid, 'os2forms_sbsys');
     if (isset($sbsys_config['enabled']) && $sbsys_config['enabled']) {
       // Generating submission id.
       $no_send_sbsys_mail = isset($sbsys_config['no_send_sbsys_email_addr']) ? $sbsys_config['no_send_sbsys_email_addr'] : FALSE;

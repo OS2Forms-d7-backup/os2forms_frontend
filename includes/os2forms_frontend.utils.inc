@@ -187,6 +187,7 @@ function os2forms_frontend_webform_save_setting($nid, $submodule, $data) {
       db_update('os2forms_frontend_webform_settings')
         ->fields($fields)
         ->condition('nid', $nid)
+        ->condition('submodule', $submodule)
         ->execute();
     }
     else {
@@ -221,5 +222,14 @@ function os2forms_frontend_webform_delete_setting($nid, $submodule = NULL) {
   $query->execute();
 }
 
-
-
+/**
+ * Removes os2forms_frontend setting for submodule.
+ *
+ * @param string $submodule
+ *   Name of the submodule.
+ */
+function os2forms_frontend_submodule_delete_setting($submodule) {
+  $query = db_delete('os2forms_frontend_webform_settings')
+    ->condition('submodule', $submodule, '=');
+  $query->execute();
+}

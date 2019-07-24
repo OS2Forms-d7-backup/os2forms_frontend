@@ -11,6 +11,11 @@ function bellcom_webform_update_7101(&$sandbox) {
   );
   module_enable($module_list, TRUE);
 
+  // Creating os2forms_frontend_webform_settings, we will need it later in the code.
+  if (!db_table_exists('os2forms_frontend_webform_settings')) {
+    db_create_table('os2forms_frontend_webform_settings', drupal_get_schema_unprocessed('os2forms_frontend', 'os2forms_frontend_webform_settings'));
+  }
+
   // Migrating bellcom_webform entries.
   $bellcom_webform_entries = db_select('bellcom_webform', 'bw')
     ->fields('bw')
@@ -22,13 +27,18 @@ function bellcom_webform_update_7101(&$sandbox) {
 
     // Skipping nodes that don't exist anymore.
     if (node_load($entry_array['nid'])) {
+      $nid = $entry_array['nid'];
+      unset($entry_array['nid']);
+
       $data = unserialize($entry_array['data']);
 
       $data['mark_synched'] = $data['anonymize_submission'];
       unset($data['anonymize_submission']);
+      $data['enabled'] = $entry_array['enabled'];
+      unset($entry_array['enabled']);
       $entry_array['data'] = $data;
 
-      drupal_write_record('os2forms_sbsys_settings', $entry_array);
+      os2forms_frontend_webform_save_setting($nid, 'os2forms_sbsys', $data);
     }
   }
 
@@ -43,7 +53,13 @@ function bellcom_webform_update_7101(&$sandbox) {
 
     // Skipping nodes that don't exist anymore, or name is empty.
     if (node_load($entry_array['nid']) && !empty($entry_array['name'])) {
-      drupal_write_record('os2forms_webform2pdf_settings', $entry_array);
+      $nid = $entry_array['nid'];
+      unset($entry_array['nid']);
+
+      $entry_array['custom_pdf_name'] = $entry_array['name'];
+      unset($entry_array['name']);
+
+      os2forms_frontend_webform_save_setting($nid, 'os2forms_webform2pdf', $entry_array);
     }
   }
 
@@ -58,9 +74,16 @@ function bellcom_webform_update_7101(&$sandbox) {
 
     // Skipping nodes that don't exist anymore.
     if (node_load($entry_array['nid'])) {
-      drupal_write_record('os2forms_doc_settings', $entry_array);
+      $nid = $entry_array['nid'];
+      unset($entry_array['nid']);
+
+      os2forms_frontend_webform_save_setting($nid, 'os2forms_doc', $entry_array);
     }
   }
+
+  db_drop_table('bellcom_webform');
+  db_drop_table('bellcom_webform_custom_pdf_name');
+  db_drop_table('bellcom_webform_generate_doc');
 
   drupal_flush_all_caches();
 

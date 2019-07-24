@@ -10,7 +10,7 @@
  * @return mixed
  */
 function os2forms_doc_settings_form($form, $form_state, $node) {
-  $default = os2forms_doc_get_setting($node->nid);
+  $default = os2forms_frontend_webform_get_setting($node->nid, 'os2forms_doc');
 
   if (!$default) {
     $default['enabled'] = 0;
@@ -95,49 +95,10 @@ function os2forms_doc_create_file($webform, $submission) {
  * @param $form_state
  */
 function os2forms_doc_settings_form_submit($form, &$form_state) {
-  $settings = array();
+  $nid = $form_state['values']['nid'];
+  $data = array(
+    'enabled' => $form_state['values']['enabled']
+  );
 
-  $settings['nid'] = $form_state['values']['nid'];
-  $settings['enabled'] = $form_state['values']['enabled'];
-
-  // First enabled
-  if (isset($form_state['values']['new'])) {
-    drupal_write_record('os2forms_doc_settings', $settings);
-  }
-  else {
-    drupal_write_record('os2forms_doc_settings', $settings, 'nid');
-  }
-}
-
-/**
- * Get webform setting for the specified nid.
- *
- * @param $nid
- *
- * @return array
- */
-function os2forms_doc_get_setting($nid) {
-  $default = db_select('os2forms_doc_settings', 'od')
-    ->fields('od')
-    ->condition('nid', $nid, '=')
-    ->execute()
-    ->fetchAssoc();
-
-  if ($default) {
-    return $default;
-  }
-
-  return array();
-}
-
-/**
- * Removes os2forms_doc setting from database.
- *
- * @param int $nid
- *   Node id.
- */
-function os2forms_doc_delete_setting($nid) {
-  db_delete('os2forms_doc_settings')
-    ->condition('nid', $nid, '=')
-    ->execute();
+  os2forms_frontend_webform_save_setting($nid, 'os2forms_doc', $data);
 }

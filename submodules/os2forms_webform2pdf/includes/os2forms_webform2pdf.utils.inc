@@ -15,34 +15,11 @@ function os2forms_webform2pdf_custom_pdf_name_form_validate($form, $form_state) 
  */
 function os2forms_webform2pdf_custom_pdf_name_form_submit($form, $form_state) {
   $nid = $form_state['values']['nid'];
-  $fields['nid'] = $nid;
-  $fields['name'] = $form_state['values']['os2forms_webform2pdf_custom_pdf_name'];
+  $data = array(
+    'custom_pdf_name' => $form_state['values']['os2forms_webform2pdf_custom_pdf_name'],
+  );
 
-  $query = db_select('os2forms_webform2pdf_settings');
-  $query->condition('nid', $nid);
-  $query->addExpression('COUNT(*)');
-  $rows = $query->execute()->fetchField();
-
-  if ($rows > 0) {
-    if (!empty($fields['name'])) {
-      db_update('os2forms_webform2pdf_settings')
-        ->fields($fields)
-        ->condition('nid', $nid)
-        ->execute();
-    }
-    else {
-      db_delete('os2forms_webform2pdf_settings')
-        ->condition('nid', $nid)
-        ->execute();
-    }
-  }
-  else {
-    if (!empty($fields['name'])) {
-      db_insert('os2forms_webform2pdf_settings')
-        ->fields($fields)
-        ->execute();
-    }
-  }
+  os2forms_frontend_webform_save_setting($nid, 'os2forms_webform2pdf', $data);
 }
 
 /**
@@ -52,11 +29,12 @@ function os2forms_webform2pdf_custom_pdf_name_form_submit($form, $form_state) {
  * @return string
  */
 function os2forms_webform2pdf_webform2pdf_filename($vars) {
-  $name = db_select('os2forms_webform2pdf_settings', 'b')
-    ->fields('b', array('name'))
-    ->condition('nid', $vars['node']->nid)
-    ->execute()
-    ->fetchField();
+  $settings = os2forms_frontend_webform_get_setting($vars['node']->nid, 'os2forms_webform2pdf');
+
+  $name = NULL;
+  if (isset($settings['custom_pdf_name'])) {
+    $name = $settings['custom_pdf_name'];
+  }
 
   if (!empty($name)) {
     $sid = is_object($vars['submission']) ? $vars['submission']->sid : $vars['submission'];
@@ -69,17 +47,4 @@ function os2forms_webform2pdf_webform2pdf_filename($vars) {
 
     return theme_webform2pdf_filename($vars);
   }
-}
-
-
-/**
- * Removes os2forms_webform2pdf setting from database.
- *
- * @param int $nid
- *   Node id.
- */
-function os2forms_webform2pdf_delete_setting($nid) {
-  db_delete('os2forms_webform2pdf_settings')
-    ->condition('nid', $nid, '=')
-    ->execute();
 }

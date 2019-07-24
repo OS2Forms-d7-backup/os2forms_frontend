@@ -1,29 +1,8 @@
 <?php
 
 /**
- * Implements hook_schema().
+ * Implements hook_uninstall().
  */
-function os2forms_doc_schema() {
-  $schema['os2forms_doc_settings'] = array(
-    'description' => 'Database containing the settings of os2forms_doc generate doc.',
-    'fields' => array(
-      'nid' => array(
-        'description' => 'The node identifier of a webform.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'enabled' => array(
-        'description' => 'Show if doc generation is enabled: 0: OFF, 1: ON.',
-        'type' => 'int',
-        'size' => 'tiny',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-    ),
-    'primary key' => array('nid'),
-  );
-
-  return $schema;
+function os2forms_doc_uninstall() {
+  os2forms_frontend_submodule_delete_setting('os2forms_doc');
 }
