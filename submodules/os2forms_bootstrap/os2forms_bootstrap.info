@@ -2,7 +2,6 @@ name = OS2forms Bootstrap
 core = 7.x
 package = OS2Forms
 version = 7.x-1.0
-dependencies[] = os2forms_frontend
 dependencies[] = webform_bt_layout
 stylesheets[all][] = css/os2forms_bootstrap.css
 scripts[] = js/os2forms_bootstrap.js

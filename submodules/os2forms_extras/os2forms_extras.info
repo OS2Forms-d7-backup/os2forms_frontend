@@ -6,7 +6,6 @@ dependencies[] = charts
 dependencies[] = charts_google
 dependencies[] = custom_add_another
 dependencies[] = options_element
-dependencies[] = os2forms_frontend
 dependencies[] = select_or_other
 dependencies[] = webform
 dependencies[] = webform_chart
