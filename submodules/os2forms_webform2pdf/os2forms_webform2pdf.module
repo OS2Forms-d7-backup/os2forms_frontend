@@ -15,28 +15,40 @@ function os2forms_webform2pdf_theme_registry_alter(&$theme_registry) {
  * Adds custom pdf name field.
  */
 function os2forms_webform2pdf_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == 'webform2pdf_edit_form') {
-    $settings = os2forms_frontend_webform_get_setting($form['nid']['#value'], 'os2forms_webform2pdf');
-    $name = NULL;
-    if (isset($settings['custom_pdf_name'])) {
-      $name = $settings['custom_pdf_name'];
+  if ($form_id == 'os2forms_settings_form') {
+    $nid = $form['#webform_nid'];
+    $default = webform2pdf_get_setting($nid);
+    if ($default && $default['enabled'] == 1) {
+
+      $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_webform2pdf');
+      $name = NULL;
+      if (isset($settings['custom_pdf_name'])) {
+        $name = $settings['custom_pdf_name'];
+      }
+
+      $form['os2forms_webform2pdf_fs'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('OS2Forms Webform2PDF settings'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+      );
+
+      $form['os2forms_webform2pdf_fs']['os2forms_webform2pdf_custom_pdf_name'] = array(
+        '#title' => t('Custom PDF name'),
+        '#type' => 'textfield',
+        '#maxlength' => 255,
+        '#default_value' => $name,
+        '#description' => t('Provide a custom PDF name e.g. <i>myform.pdf</i>, if none is specified a default one will be used. <br>
+        <b>Please note that extension (.pdf) is a mandatory part of the name</b><br><br>
+        Available tokens: <br>
+        <b>@nid</b> => node id of the form<br>
+        <b>@sid</b> => submission id
+        '),
+      );
+
+      $form['#validate'][] = 'os2forms_webform2pdf_custom_pdf_name_form_validate';
+      $form['#submit'][] = 'os2forms_webform2pdf_custom_pdf_name_form_submit';
     }
-
-    $form['base']['os2forms_webform2pdf_custom_pdf_name'] = array(
-      '#title' => t('Custom PDF name'),
-      '#type' => 'textfield',
-      '#maxlength' => 255,
-      '#default_value' => $name,
-      '#description' => t('Provide a custom PDF name e.g. <i>myform.pdf</i>, if none is specified a default one will be used. <br>
-      <b>Please note that extension (.pdf) is a mandatory part of the name</b><br><br>
-      Available tokens: <br>
-      <b>@nid</b> => node id of the form<br>
-      <b>@sid</b> => submission id
-      '),
-    );
-
-    $form['#validate'][] = 'os2forms_webform2pdf_custom_pdf_name_form_validate';
-    $form['#submit'][] = 'os2forms_webform2pdf_custom_pdf_name_form_submit';
   }
 }
 

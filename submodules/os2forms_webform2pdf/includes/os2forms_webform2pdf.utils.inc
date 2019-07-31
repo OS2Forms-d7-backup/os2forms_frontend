@@ -14,7 +14,7 @@ function os2forms_webform2pdf_custom_pdf_name_form_validate($form, $form_state) 
  * Custom form submit that stores the form custom PDF filename.
  */
 function os2forms_webform2pdf_custom_pdf_name_form_submit($form, $form_state) {
-  $nid = $form_state['values']['nid'];
+  $nid = $form['#webform_nid'];
   $data = array(
     'custom_pdf_name' => $form_state['values']['os2forms_webform2pdf_custom_pdf_name'],
   );

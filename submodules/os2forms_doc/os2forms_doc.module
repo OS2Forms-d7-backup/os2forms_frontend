@@ -3,24 +3,6 @@
 module_load_include('inc', 'os2forms_doc', 'includes/os2forms_doc.utils');
 
 /**
- * Implements hook_menu().
- */
-function os2forms_doc_menu() {
-  $items = array();
-
-  $items['node/%webform_menu/webform/os2forms_doc'] = array(
-    'title' => 'OS2Forms Generate DOC',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('os2forms_doc_settings_form', 1),
-    'access arguments' => array('edit webform components'),
-    'weight' => 4,
-    'type' => MENU_LOCAL_TASK,
-  );
-
-  return $items;
-}
-
-/**
  * Implements hook_mail_alter().
  */
 function os2forms_doc_mail_alter(&$message) {

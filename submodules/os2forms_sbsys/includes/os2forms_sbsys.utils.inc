@@ -1,140 +1,138 @@
 <?php
 
 /**
- * Renders custom setting for SBSYS form.
+ * Implements hook_form_alter().
+ *
+ * Adds settings for SBSYS generation to webform.
+ *
+ * @param $form
+ * @param $form_state
+ * @param $form_id *
  */
-function os2forms_sbsys_settings_form($form, $form_state, $node) {
-  $components_options = array();
-  foreach ($node->webform['components'] as $id => $component) {
-    $components_options[$component['form_key']] = $component['name'];
-  }
-  $components_options['custom'] = t('Custom text') . '...';
+function os2forms_sbsys_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'os2forms_settings_form') {
+    $nid = $form['#webform_nid'];
 
-  $nemid_field_components_options =  array_merge(array('default_nemid_value' => t('Get value from nemid')), $components_options);
-  $default = os2forms_frontend_webform_get_setting($node->nid, 'os2forms_sbsys');
+    $node = node_load($nid);
+    $components_options = array();
+    foreach ($node->webform['components'] as $id => $component) {
+      $components_options[$component['form_key']] = $component['name'];
+    }
+    $components_options['custom'] = t('Custom text') . '...';
 
-  if (!$default) {
-    $default['enabled'] = 0;
-  }
+    $nemid_field_components_options =  array_merge(array('default_nemid_value' => t('Get value from nemid')), $components_options);
+    $default = os2forms_frontend_webform_get_setting($nid, 'os2forms_sbsys');
 
-  $form['enabled'] = array(
-    '#default_value' => $default['enabled'],
-    '#type' => 'checkbox',
-    '#title' => t('Send SBSYS XML'),
-  );
-
-  $form['mark_synched'] = array(
-    '#default_value' => isset($default['mark_synched']) ? $default['mark_synched'] : NULL,
-    '#type' => 'checkbox',
-    '#title' => t('Mark submission "synched" upon XML sending (schedule for anonymization)'),
-    '#states' => array(
-      'visible' => array(
-        'input[name="enabled"]' => array('checked' => TRUE),
+    if (!$default) {
+      $default['enabled'] = 0;
+    }
+    $form['os2forms_sbsys_fs'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('OS2Forms SBSYS XML settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $form['os2forms_sbsys_fs']['sbsys_enabled'] = array(
+      '#default_value' => $default['enabled'],
+      '#type' => 'checkbox',
+      '#title' => t('Send SBSYS XML'),
+    );
+    $form['os2forms_sbsys_fs']['sbsys_mark_synched'] = array(
+      '#default_value' => isset($default['mark_synched']) ? $default['mark_synched'] : NULL,
+      '#type' => 'checkbox',
+      '#title' => t('Mark submission "synched" upon XML sending (schedule for anonymization)'),
+      '#states' => array(
+        'visible' => array(
+          'input[name="sbsys_enabled"]' => array('checked' => TRUE),
+        ),
       ),
-    ),
-    '#description' => t('Confirm that upon XML sending submission is marked as synched, and therefore can be anonymized. <br/><b>NB!</b> If you mark this without making sure the XML can be delivered, you will lose the data.'),
-  );
+      '#description' => t('Confirm that upon XML sending submission is marked as synched, and therefore can be anonymized. <br/><b>NB!</b> If you mark this without making sure the XML can be delivered, you will lose the data.'),
+    );
 
-  $form['fields'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Field settings'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#states' => array(
-      'visible' => array(
-        'input[name="enabled"]' => array('checked' => TRUE),
+    $form['os2forms_sbsys_fs']['fields'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Field settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#states' => array(
+        'visible' => array(
+          'input[name="sbsys_enabled"]' => array('checked' => TRUE),
+        ),
       ),
-    ),
-  );
+    );
 
-  //adding os2formsId
-  os2forms_sbsys_settings_add_field($form, 'os2formsId', $default, $components_options);
-  //adding kle
-  os2forms_sbsys_settings_add_field($form, 'kle', $default, $components_options);
-  //adding sagSkabelonId
-  os2forms_sbsys_settings_add_field($form, 'sagSkabelonId', $default, $components_options);
-  //adding nemid_cpr
-  os2forms_sbsys_settings_add_field($form, 'nemid_cpr', $default, $nemid_field_components_options, 'nemid_field');
-  //adding nemid_name
-  os2forms_sbsys_settings_add_field($form, 'nemid_name', $default, $nemid_field_components_options, 'nemid_field');
-  //adding nemid_address
-  os2forms_sbsys_settings_add_field($form, 'nemid_address', $default, $nemid_field_components_options, 'nemid_field');
-  //adding nemid_zipcode
-  os2forms_sbsys_settings_add_field($form, 'nemid_zipcode', $default, $nemid_field_components_options, 'nemid_field');
-  //adding nemid_city
-  os2forms_sbsys_settings_add_field($form, 'nemid_city', $default, $nemid_field_components_options, 'nemid_field');
-  //adding bodyText
-  os2forms_sbsys_settings_add_field($form, 'bodyText', $default, $components_options, 'textarea');
+    //adding os2formsId
+    os2forms_sbsys_settings_add_field($form, 'os2formsId', $default, $components_options);
+    //adding kle
+    os2forms_sbsys_settings_add_field($form, 'kle', $default, $components_options);
+    //adding sagSkabelonId
+    os2forms_sbsys_settings_add_field($form, 'sagSkabelonId', $default, $components_options);
+    //adding nemid_cpr
+    os2forms_sbsys_settings_add_field($form, 'nemid_cpr', $default, $nemid_field_components_options, 'nemid_field');
+    //adding nemid_name
+    os2forms_sbsys_settings_add_field($form, 'nemid_name', $default, $nemid_field_components_options, 'nemid_field');
+    //adding nemid_address
+    os2forms_sbsys_settings_add_field($form, 'nemid_address', $default, $nemid_field_components_options, 'nemid_field');
+    //adding nemid_zipcode
+    os2forms_sbsys_settings_add_field($form, 'nemid_zipcode', $default, $nemid_field_components_options, 'nemid_field');
+    //adding nemid_city
+    os2forms_sbsys_settings_add_field($form, 'nemid_city', $default, $nemid_field_components_options, 'nemid_field');
+    //adding bodyText
+    os2forms_sbsys_settings_add_field($form, 'bodyText', $default, $components_options, 'textarea');
 
-  $form['email'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('E-mail settings'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#states' => array(
-      'visible' => array(
-        'input[name="enabled"]' => array('checked' => TRUE),
+    $form['os2forms_sbsys_fs']['email'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('E-mail settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#states' => array(
+        'visible' => array(
+          'input[name="sbsys_enabled"]' => array('checked' => TRUE),
+        ),
       ),
-    ),
-  );
-  $send_mail = array();
-  if ( !empty($node->webform['email']) ) {
-    $send_mail['email'] = $node->webform['email'];
-  }
+    );
+    $send_mail = array();
+    if ( !empty($node->webform['email']) ) {
+      $send_mail['email'] = $node->webform['email'];
+    }
 
-  if (is_array($node->webform['emails'])) {
-    foreach ($node->webform['emails'] as $eid => $email) {
-      $email_addresses = array_filter(explode(',', check_plain($email['email'])));
-      foreach ($email_addresses as $key => $email_address) {
-        $email_addresses[$key] = webform_format_email_address($email_address, NULL, $node, NULL, FALSE);
+    if (is_array($node->webform['emails'])) {
+      foreach ($node->webform['emails'] as $eid => $email) {
+        $email_addresses = array_filter(explode(',', check_plain($email['email'])));
+        foreach ($email_addresses as $key => $email_address) {
+          $email_addresses[$key] = webform_format_email_address($email_address, NULL, $node, NULL, FALSE);
+        }
+
+        $send_mail[$eid] = implode(', ', $email_addresses);
+      }
+    }
+    if ( count($send_mail) ) {
+      if (isset($default['no_send_sbsys_email_addr'])) {
+        $def = $default['no_send_sbsys_email_addr'];
+      }
+      if (!isset($def) || !is_array($def) ) {
+        $def = array();
       }
 
-      $send_mail[$eid] = implode(', ', $email_addresses);
-    }
-  }
-  if ( count($send_mail) ) {
-    if (isset($default['no_send_sbsys_email_addr'])) {
-      $def = $default['no_send_sbsys_email_addr'];
-    }
-    if (!isset($def) || !is_array($def) ) {
-      $def = array();
+      $form['os2forms_sbsys_fs']['email']['sbsys_no_send_sbsys_email_addr'] = array(
+        '#title' => t("Do not send SBSYS file"),
+        '#type' => 'checkboxes',
+        '#options' => $send_mail,
+        '#default_value' => $def,
+        '#description' => t("SBSYS XML file will NOT be attached to the e-mail sent to the following recipients."),
+      );
     }
 
-    $form['email']['no_send_sbsys_email_addr'] = array(
-      '#title' => t("Do not send SBSYS file"),
-      '#type' => 'checkboxes',
-      '#options' => $send_mail,
-      '#default_value' => $def,
-      '#description' => t("SBSYS XML file will NOT be attached to the e-mail sent to the following recipients."),
+    $form['os2forms_sbsys_fs']['fields']['sbsys_MaaSendesTilDFF'] = array(
+      '#type' => 'select',
+      '#title' => t('@field_name value', array('@field_name' => 'MaaSendesTilDFF')),
+      '#options' => array('ja' => 'Ja', 'nej' => 'Nej'),
+      '#default_value' => isset($default['MaaSendesTilDFF']) ? $default['MaaSendesTilDFF'] : '',
+      '#description' => t('Select a value from form submitted fields or provide a custom static value'),
     );
+
+    $form['#submit'][] = 'os2forms_sbsys_settings_form_submit';
   }
-
-  $form['fields']['MaaSendesTilDFF'] = array(
-    '#type' => 'select',
-    '#title' => t('@field_name value', array('@field_name' => 'MaaSendesTilDFF')),
-    '#options' => array('ja' => 'Ja', 'nej' => 'Nej'),
-    '#default_value' => isset($default['MaaSendesTilDFF']) ? $default['MaaSendesTilDFF'] : '',
-    '#description' => t('Select a value from form submitted fields or provide a custom static value'),
-  );
-
-  $form['nid'] = array(
-    '#type' => 'value',
-    '#value' => $node->nid,
-  );
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save'),
-  );
-
-  if (!isset($default['nid'])) {
-    $form['new'] = array(
-      '#type' => 'value',
-      '#value' => 1,
-    );
-  }
-
-  return $form;
 }
 
 /**
@@ -147,7 +145,7 @@ function os2forms_sbsys_settings_form($form, $form_state, $node) {
  * @param $field_type
  */
 function os2forms_sbsys_settings_add_field(&$form, $field_name, $default, $components_options, $field_type = 'textfield') {
-  $form['fields'][$field_name] = array(
+  $form['os2forms_sbsys_fs']['fields']['sbsys_'.$field_name] = array(
     '#type' => 'select',
     '#title' => t('@field_name value', array('@field_name' => $field_name)),
     '#options' => $components_options,
@@ -155,10 +153,10 @@ function os2forms_sbsys_settings_add_field(&$form, $field_name, $default, $compo
     '#description' => t('Select a value from form submitted fields or provide a custom static value'),
   );
   if ($field_type == 'nemid_field' && empty($default[$field_name])) {
-    $form['fields'][$field_name]['#default_value'] = 'default_nemid_value';
+    $form['os2forms_sbsys_fs']['fields']['sbsys_'.$field_name]['#default_value'] = 'default_nemid_value';
   }
   if ($field_type == 'textfield' || $field_type == 'nemid_field') {
-    $form['fields'][$field_name . '_custom'] = array(
+    $form['os2forms_sbsys_fs']['fields']['sbsys_'.$field_name . '_custom'] = array(
       '#type' => 'textfield',
       '#title' => t('@field_name custom text', array('@field_name' => $field_name)),
       '#default_value' => isset($default[$field_name . '_custom']) ? $default[$field_name . '_custom'] : '',
@@ -166,27 +164,27 @@ function os2forms_sbsys_settings_add_field(&$form, $field_name, $default, $compo
       '#maxlength' => 128,
       '#states' => array(
         'visible' => array(
-          ':input[name="' . $field_name . '"]' => array('value' => 'custom'),
+          ':input[name="' . 'sbsys_'.$field_name . '"]' => array('value' => 'custom'),
         ),
       ),
       '#description' => t('Provide a custom static value'),
     );
   }
   else {
-    $form['fields'][$field_name . '_custom'] = array(
+    $form['os2forms_sbsys_fs']['fields']['sbsys_'.$field_name . '_custom'] = array(
       '#type' => 'textarea',
       '#title' => t('@field_name custom text', array('@field_name' => $field_name)),
       '#default_value' => isset($default[$field_name . '_custom']) ? $default[$field_name . '_custom'] : '',
       '#states' => array(
         'visible' => array(
-          ':input[name="' . $field_name . '"]' => array('value' => 'custom'),
+          ':input[name="' . 'sbsys_'.$field_name . '"]' => array('value' => 'custom'),
         ),
       ),
       '#description' => t('Provide a custom static value'),
     );
   }
 
-  $form['fields'][] = array('#markup' => '<hr/>');
+  $form['os2forms_sbsys_fs']['fields'][] = array('#markup' => '<hr/>');
 }
 
 /**
@@ -196,16 +194,20 @@ function os2forms_sbsys_settings_add_field(&$form, $field_name, $default, $compo
  * @param $form_state
  */
 function os2forms_sbsys_settings_form_submit($form, &$form_state) {
-  $data = $form_state['values'];
-  unset($data['nid']);
-  unset($data['submit']);
-  unset($data['reset']);
-  unset($data['form_build_id']);
-  unset($data['form_token']);
-  unset($data['form_id']);
-  unset($data['op']);
-
-  $nid = $form_state['values']['nid'];
+  if ($form_state['values']['sbsys_enabled']){
+    foreach ($form_state['values'] as $key => $value) {
+      if (stripos($key, 'sbsys_') === 0) {
+        $data_key = substr($key, 6);
+        $data[$data_key] = $value;
+      }
+    }
+  }
+  else {
+    $data = array(
+      'enabled' => $form_state['values']['sbsys_enabled']
+    );
+  }
+  $nid = $form['#webform_nid'];
 
   os2forms_frontend_webform_save_setting($nid, 'os2forms_sbsys', $data);
 }

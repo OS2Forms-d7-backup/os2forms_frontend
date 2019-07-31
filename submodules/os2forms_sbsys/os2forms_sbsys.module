@@ -4,24 +4,6 @@ module_load_include('inc', 'os2forms_sbsys', 'includes/os2forms_sbsys.utils');
 module_load_include('inc', 'os2forms_sbsys', 'includes/os2forms_sbsys.xml_generation');
 
 /**
- * Implements hook_menu().
- */
-function os2forms_sbsys_menu() {
-  $items = array();
-
-  $items['node/%webform_menu/webform/os2forms_sbsys'] = array(
-    'title' => 'OS2Forms SBSYS XML',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('os2forms_sbsys_settings_form', 1),
-    'access arguments' => array('edit webform components'),
-    'weight' => 4,
-    'type' => MENU_LOCAL_TASK,
-  );
-
-  return $items;
-}
-
-/**
  * Implements hook_mail_alter().
  */
 function os2forms_sbsys_mail_alter(&$message) {

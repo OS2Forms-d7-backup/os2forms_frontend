@@ -1,49 +1,41 @@
 <?php
 
 /**
- * Renders custom setting for Generate DOC formm.
+ *Implements hook_form_alter().
+ *
+ * Adds custom setting for Generate DOC form.
  *
  * @param $form
  * @param $form_state
- * @param $node
- *
- * @return mixed
+ * @param $form_id
  */
-function os2forms_doc_settings_form($form, $form_state, $node) {
-  $default = os2forms_frontend_webform_get_setting($node->nid, 'os2forms_doc');
+function os2forms_doc_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'os2forms_settings_form') {
+    $nid = $form['#webform_nid'];
+    $default = os2forms_frontend_webform_get_setting($nid, 'os2forms_doc');
 
-  if (!$default) {
-    $default['enabled'] = 0;
-  }
+    if (!$default) {
+      $default['enabled'] = 0;
+    }
+    $form['os2forms_doc_fs'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('OS2Forms Generate DOC settings'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+      );
 
-  $form['enabled'] = array(
-    '#default_value' => $default['enabled'],
-    '#type' => 'checkbox',
-    '#title' => t('Generate DOC'),
-  );
-
-  $form['nid'] = array(
-    '#type' => 'value',
-    '#value' => $node->nid,
-  );
-
-  $form[] = array(
-    '#markup' => '<p>The content of the generated DOC file is the same as for PDF file. It can be altered ' . l('here', 'node/' . $node->nid . '/webform/webform2pdf') . '.</p>',
-  );
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save'),
-  );
-
-  if (!isset($default['nid'])) {
-    $form['new'] = array(
-      '#type' => 'value',
-      '#value' => 1,
+    $form['os2forms_doc_fs']['doc_enabled'] = array(
+      '#default_value' => $default['enabled'],
+      '#type' => 'checkbox',
+      '#title' => t('Generate DOC'),
     );
-  }
 
-  return $form;
+    $form['os2forms_doc_fs'][] = array(
+      '#markup' => '<p>The content of the generated DOC file is the same as for PDF file. It can be altered ' . l('here', 'node/' . $nid . '/webform/webform2pdf') . '.</p>',
+    );
+
+    $form['#submit'][] = 'os2forms_doc_settings_form_submit';
+  }
 }
 
 /**
@@ -95,9 +87,9 @@ function os2forms_doc_create_file($webform, $submission) {
  * @param $form_state
  */
 function os2forms_doc_settings_form_submit($form, &$form_state) {
-  $nid = $form_state['values']['nid'];
+  $nid = $form['#webform_nid'];
   $data = array(
-    'enabled' => $form_state['values']['enabled']
+    'enabled' => $form_state['values']['doc_enabled']
   );
 
   os2forms_frontend_webform_save_setting($nid, 'os2forms_doc', $data);
