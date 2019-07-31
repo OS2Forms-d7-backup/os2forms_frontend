@@ -45,3 +45,50 @@ function os2forms_nemid_form_alter(&$form, &$form_state, $form_id) {
     $form = os2form_nemid_handle_field_visiblity($form);
   }
 }
+
+/**
+ * Implements hook_webform_component_info().
+ */
+function os2forms_nemid_webform_component_info() {
+  $components = array();
+  $components['nemid_link'] = array(
+    'label' => t('NemID link'),
+    'description' => t('Create NemID link button.'),
+    'features' => array(
+      'required' => FALSE,
+      'group' => FALSE,
+      'title_display' => FALSE,
+      'title_inline' => FALSE,
+      'display' => FALSE,
+      'private' => FALSE,
+      'description' => FALSE,
+      'disabled' => FALSE,
+      'spam_analysis' => FALSE,
+      'attachment' => FALSE,
+    ),
+    'file' => 'components/nemid_link.inc',
+  );
+  return $components;
+}
+
+/**
+ * Implements hook_webform_component_update().
+ */
+function os2forms_nemid_webform_component_update($component) {
+  if ($component['type'] == 'nemid_link') {
+    $nid = $component['nid'];
+    variable_set('nemlogin_link_enable_' . $nid, 1);
+    variable_set('nemlogin_link_auto_redirect_' . $nid, $component['extra']['nemid_link_auto_redirect']);
+  }
+}
+
+/**
+ * Implements hook_webform_component_insert().
+ */
+function os2forms_nemid_webform_component_insert($component) {
+  if ($component['type'] == 'nemid_link') {
+    $nid = $component['nid'];
+    variable_set('nemlogin_link_enable_' . $nid, 1);
+    variable_set('nemlogin_link_auto_redirect_' . $nid, $component['extra']['nemid_link_auto_redirect']);
+  }
+}
