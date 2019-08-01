@@ -7,7 +7,7 @@
  *
  * @param $form
  * @param $form_state
- * @param $form_id *
+ * @param $form_id
  */
 function os2forms_sbsys_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'os2forms_settings_form') {
@@ -20,7 +20,7 @@ function os2forms_sbsys_form_alter(&$form, &$form_state, $form_id) {
     }
     $components_options['custom'] = t('Custom text') . '...';
 
-    $nemid_field_components_options =  array_merge(array('default_nemid_value' => t('Get value from nemid')), $components_options);
+    $nemid_field_components_options = array_merge(array('default_nemid_value' => t('Get value from nemid')), $components_options);
     $default = os2forms_frontend_webform_get_setting($nid, 'os2forms_sbsys');
 
     if (!$default) {
@@ -92,7 +92,7 @@ function os2forms_sbsys_form_alter(&$form, &$form_state, $form_id) {
       ),
     );
     $send_mail = array();
-    if ( !empty($node->webform['email']) ) {
+    if (!empty($node->webform['email'])) {
       $send_mail['email'] = $node->webform['email'];
     }
 
@@ -106,11 +106,11 @@ function os2forms_sbsys_form_alter(&$form, &$form_state, $form_id) {
         $send_mail[$eid] = implode(', ', $email_addresses);
       }
     }
-    if ( count($send_mail) ) {
+    if (count($send_mail)) {
       if (isset($default['no_send_sbsys_email_addr'])) {
         $def = $default['no_send_sbsys_email_addr'];
       }
-      if (!isset($def) || !is_array($def) ) {
+      if (!isset($def) || !is_array($def)) {
         $def = array();
       }
 
@@ -145,7 +145,7 @@ function os2forms_sbsys_form_alter(&$form, &$form_state, $form_id) {
  * @param $field_type
  */
 function os2forms_sbsys_settings_add_field(&$form, $field_name, $default, $components_options, $field_type = 'textfield') {
-  $form['os2forms_sbsys_fs']['fields']['sbsys_'.$field_name] = array(
+  $form['os2forms_sbsys_fs']['fields']['sbsys_' . $field_name] = array(
     '#type' => 'select',
     '#title' => t('@field_name value', array('@field_name' => $field_name)),
     '#options' => $components_options,
@@ -153,10 +153,10 @@ function os2forms_sbsys_settings_add_field(&$form, $field_name, $default, $compo
     '#description' => t('Select a value from form submitted fields or provide a custom static value'),
   );
   if ($field_type == 'nemid_field' && empty($default[$field_name])) {
-    $form['os2forms_sbsys_fs']['fields']['sbsys_'.$field_name]['#default_value'] = 'default_nemid_value';
+    $form['os2forms_sbsys_fs']['fields']['sbsys_' . $field_name]['#default_value'] = 'default_nemid_value';
   }
   if ($field_type == 'textfield' || $field_type == 'nemid_field') {
-    $form['os2forms_sbsys_fs']['fields']['sbsys_'.$field_name . '_custom'] = array(
+    $form['os2forms_sbsys_fs']['fields']['sbsys_' . $field_name . '_custom'] = array(
       '#type' => 'textfield',
       '#title' => t('@field_name custom text', array('@field_name' => $field_name)),
       '#default_value' => isset($default[$field_name . '_custom']) ? $default[$field_name . '_custom'] : '',
@@ -164,20 +164,20 @@ function os2forms_sbsys_settings_add_field(&$form, $field_name, $default, $compo
       '#maxlength' => 128,
       '#states' => array(
         'visible' => array(
-          ':input[name="' . 'sbsys_'.$field_name . '"]' => array('value' => 'custom'),
+          ':input[name="' . 'sbsys_' . $field_name . '"]' => array('value' => 'custom'),
         ),
       ),
       '#description' => t('Provide a custom static value'),
     );
   }
   else {
-    $form['os2forms_sbsys_fs']['fields']['sbsys_'.$field_name . '_custom'] = array(
+    $form['os2forms_sbsys_fs']['fields']['sbsys_' . $field_name . '_custom'] = array(
       '#type' => 'textarea',
       '#title' => t('@field_name custom text', array('@field_name' => $field_name)),
       '#default_value' => isset($default[$field_name . '_custom']) ? $default[$field_name . '_custom'] : '',
       '#states' => array(
         'visible' => array(
-          ':input[name="' . 'sbsys_'.$field_name . '"]' => array('value' => 'custom'),
+          ':input[name="' . 'sbsys_' . $field_name . '"]' => array('value' => 'custom'),
         ),
       ),
       '#description' => t('Provide a custom static value'),
@@ -194,7 +194,7 @@ function os2forms_sbsys_settings_add_field(&$form, $field_name, $default, $compo
  * @param $form_state
  */
 function os2forms_sbsys_settings_form_submit($form, &$form_state) {
-  if ($form_state['values']['sbsys_enabled']){
+  if ($form_state['values']['sbsys_enabled']) {
     foreach ($form_state['values'] as $key => $value) {
       if (stripos($key, 'sbsys_') === 0) {
         $data_key = substr($key, 6);

@@ -5,7 +5,7 @@
  */
 function os2forms_webform2pdf_custom_pdf_name_form_validate($form, $form_state) {
   $pdf_name = $form_state['values']['os2forms_webform2pdf_custom_pdf_name'];
-  if (!empty($pdf_name) && strcasecmp('.pdf',substr($pdf_name,-4)) !== 0) {
+  if (!empty($pdf_name) && strcasecmp('.pdf', substr($pdf_name, -4)) !== 0) {
     form_set_error('os2forms_webform2pdf_custom_pdf_name', t('Extension (.pdf) is a mandatory part of the name'));
   }
 }
@@ -39,7 +39,10 @@ function os2forms_webform2pdf_webform2pdf_filename($vars) {
   if (!empty($name)) {
     $sid = is_object($vars['submission']) ? $vars['submission']->sid : $vars['submission'];
 
-    $name = str_replace(array('@nid', '@sid'), array($vars['node']->nid, $sid) ,$name);
+    $name = str_replace(array('@nid', '@sid'), array(
+      $vars['node']->nid,
+      $sid,
+    ), $name);
     return $name;
   } else {
     // call to a default function

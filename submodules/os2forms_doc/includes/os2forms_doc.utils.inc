@@ -1,7 +1,7 @@
 <?php
 
 /**
- *Implements hook_form_alter().
+ * Implements hook_form_alter().
  *
  * Adds custom setting for Generate DOC form.
  *
@@ -18,11 +18,11 @@ function os2forms_doc_form_alter(&$form, &$form_state, $form_id) {
       $default['enabled'] = 0;
     }
     $form['os2forms_doc_fs'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('OS2Forms Generate DOC settings'),
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-      );
+      '#type' => 'fieldset',
+      '#title' => t('OS2Forms Generate DOC settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
 
     $form['os2forms_doc_fs']['doc_enabled'] = array(
       '#default_value' => $default['enabled'],
@@ -66,9 +66,9 @@ function os2forms_doc_create_file($webform, $submission) {
   $text = webform_replace_tokens($template['p_body']['value'], $webform, $submission);
   $text_parts = explode("\n", strip_tags($text));
 
-  foreach($text_parts as $part) {
+  foreach ($text_parts as $part) {
     if (!empty($part)) {
-      $section->addText($part, null, array('space' => array('after' => 300)));
+      $section->addText($part, NULL, array('space' => array('after' => 300)));
     }
   }
 

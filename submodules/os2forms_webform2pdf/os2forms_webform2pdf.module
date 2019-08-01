@@ -57,13 +57,13 @@ function os2forms_webform2pdf_form_alter(&$form, &$form_state, $form_id) {
  */
 function os2forms_webform2pdf_webform2pdf_available_fonts_alter(&$font, $region) {
   if (module_exists('webform2pdf')) {
-    include_once(libraries_get_path('tcpdf') . '/tcpdf.php');
+    include_once libraries_get_path('tcpdf') . '/tcpdf.php';
     $fontfile = TCPDF_FONTS::getFontFullPath('montserrat.php');
-    if (!TCPDF_STATIC::empty_string($fontfile) AND (@file_exists($fontfile))) {
+    if (!TCPDF_STATIC::empty_string($fontfile) and (@file_exists($fontfile))) {
       $font['montserrat'] = 'Montserrat';
     }
     $fontfile = TCPDF_FONTS::getFontFullPath('verdana.php');
-    if (!TCPDF_STATIC::empty_string($fontfile) AND (@file_exists($fontfile))) {
+    if (!TCPDF_STATIC::empty_string($fontfile) and (@file_exists($fontfile))) {
       $font['verdana'] = 'Verdana';
     }
   }
