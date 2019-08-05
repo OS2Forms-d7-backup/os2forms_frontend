@@ -1,6 +1,156 @@
 <?php
 
 module_load_include('inc', 'os2forms_nemid', 'includes/os2forms_nemid.utils');
+module_load_include('inc', 'os2forms_nemid', 'components/nemid_com_tpl');
+
+define('OS2FORMS_OS2FORMS_NEMID_WEBFORM_COMPONENT_TYPE_PERSONAL', 'personal');
+define('OS2FORMS_OS2FORMS_NEMID_WEBFORM_COMPONENT_TYPE_COMPANY', 'company');
+
+
+/**
+ * Implements hook_webform_component_info().
+ *
+ * Describes multiple nemid fields that can be used in the webforms.
+ */
+function os2forms_nemid_webform_component_info() {
+  $components = array();
+  $component_defaults = array(
+    'form_key' => NULL,
+    'pid' => 0,
+    'weight' => 0,
+    'value' => '',
+    'required' => 1,
+    'features' => array(
+      'csv' => TRUE,
+      'email' => FALSE,
+      'email_address' => FALSE,
+      'email_name' => FALSE,
+      'required' => TRUE,
+      'title_display' => FALSE,
+      'title_inline' => FALSE,
+      'conditional' => FALSE,
+      'group' => FALSE,
+      'spam_analysis' => FALSE,
+      'private' => FALSE,
+      'attachment' => FALSE,
+    ),
+  );
+
+  // Person FIELDS - CPR.
+  $components['nemid_cpr'] = array(
+    'label' => t('NemID CPR'),
+    'description' => t('Create CPR field.'),
+    'name' => 'nemid_cpr',
+    'file' => 'components/nemid_cpr.inc',
+  );
+  $components['nemid_cpr'] += $component_defaults;
+
+  // Person FIELDS - PID.
+  $components['nemid_pid'] = array(
+    'label' => t('NemID PID'),
+    'description' => t('Create PID field.'),
+    'name' => 'nemid_pid',
+    'file' => 'components/nemid_pid.inc',
+  );
+  $components['nemid_pid'] += $component_defaults;
+
+  // Person FIELDS - Name.
+  $components['nemid_name'] = array(
+    'label' => t('NemID Name'),
+    'description' => t('Create NemID name field.'),
+    'name' => 'nemid_name',
+    'file' => 'components/nemid_name.inc',
+  );
+  $components['nemid_name'] += $component_defaults;
+
+  // Person FIELDS - CO Address.
+  $components['nemid_coaddress'] = array(
+    'label' => t('NemID C/O address'),
+    'description' => t('Create NemID C/O-address field.'),
+    'name' => 'nemid_coaddress',
+    'file' => 'components/nemid_coaddress.inc',
+  );
+  $components['nemid_coaddress'] += $component_defaults;
+
+  // Person FIELDS - Address.
+  $components['nemid_address'] = array(
+    'label' => t('NemID Address'),
+    'description' => t('Create NemID address field.'),
+    'name' => 'nemid_address',
+    'file' => 'components/nemid_address.inc',
+  );
+  $components['nemid_address'] += $component_defaults;
+
+  // Person FIELDS - City.
+  $components['nemid_city'] = array(
+    'label' => t('NemID Postal / City'),
+    'description' => t('Create NemID Postal code / city field.'),
+    'name' => 'nemid_city',
+    'file' => 'components/nemid_city.inc',
+  );
+  $components['nemid_city'] += $component_defaults;
+
+  // Company FIELDS - CVR.
+  $components['nemid_com_cvr'] = array(
+    'label' => t('NemID Company CVR'),
+    'description' => t('Create Company CVR field.'),
+    'name' => 'nemid_com_cvr',
+    'file' => 'components/nemid_com_cvr.inc',
+  );
+  $components['nemid_com_cvr'] += $component_defaults;
+
+  // Company FIELDS - RID.
+  $components['nemid_com_rid'] = array(
+    'label' => t('NemID Company RID'),
+    'description' => t('Create Company RID field.'),
+    'name' => 'nemid_com_rid',
+    'file' => 'components/nemid_com_rid.inc',
+  );
+  $components['nemid_com_rid'] += $component_defaults;
+
+  // Company FIELDS - Name.
+  $components['nemid_com_name'] = array(
+    'label' => t('NemID Company Name'),
+    'description' => t('Create Company Name field.'),
+    'name' => 'nemid_com_name',
+    'file' => 'components/nemid_com_name.inc',
+  );
+  $components['nemid_com_name'] += $component_defaults;
+
+  // Company FIELDS - Address.
+  $components['nemid_com_addr'] = array(
+    'label' => t('NemID Company Address'),
+    'description' => t('Create Company address field.'),
+    'name' => 'nemid_com_addr',
+    'file' => 'components/nemid_com_addr.inc',
+  );
+  $components['nemid_com_addr'] += $component_defaults;
+
+  // Company FIELDS - City.
+  $components['nemid_com_city'] = array(
+    'label' => t('NemID Company Postal / City'),
+    'description' => t('Create Company city field.'),
+    'name' => 'nemid_com_city',
+    'file' => 'components/nemid_com_city.inc',
+  );
+  $components['nemid_com_city'] += $component_defaults;
+  $components['nemid_link'] = array(
+    'label' => t('NemID link'),
+    'description' => t('Create NemID link button.'),
+    'name' => 'nemid_link',
+    'features' => array(
+      'csv' => FALSE,
+      'required' => FALSE,
+      'display' => FALSE,
+      'description' => FALSE,
+      'disabled' => FALSE,
+    ),
+    'file' => 'components/nemid_link.inc',
+  );
+   $components['nemid_link']['features'] +=$component_defaults['features'];
+   $components['nemid_link'] += $component_defaults;
+   return $components;
+}
 
 /**
  * Implements hook_form_alter().
@@ -11,7 +161,17 @@ module_load_include('inc', 'os2forms_nemid', 'includes/os2forms_nemid.utils');
  * @see os2form_nemid_handle_field_visiblity.
  */
 function os2forms_nemid_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == 'os2forms_settings_form') {
+  if ($form_id == 'form_builder_field_configure') {
+    if ($form['#_edit_element']['#webform_component']['type'] == 'nemid_link') {
+      $form['default_value']['#access'] = FALSE;
+    }
+  }
+  elseif($form_id == 'webform_component_edit_form') {
+    if ($form['type']['#value'] == 'nemid_link') {
+      $form['encryption']['#access'] = FALSE;
+    }
+  }
+  elseif ($form_id == 'os2forms_settings_form') {
     // Adding NemID related setting to webform.
 
     $nid = $form['#webform_nid'];
@@ -24,10 +184,9 @@ function os2forms_nemid_form_alter(&$form, &$form_state, $form_id) {
       '#collapsed' => TRUE,
     );
 
-    // Using constants from nemid module.
     $webform_types = array(
-      NEMID_WEBFORM_COMPONENT_TYPE_PERSONAL => t('Personal'),
-      NEMID_WEBFORM_COMPONENT_TYPE_COMPANY => t('Company'),
+      OS2FORMS_NEMID_WEBFORM_COMPONENT_TYPE_PERSONAL => t('Personal'),
+      OS2FORMS_NEMID_WEBFORM_COMPONENT_TYPE_COMPANY => t('Company'),
     );
 
     $form['os2forms_nemid_fs']['os2form_nemid_webform_type'] = array(
@@ -38,57 +197,122 @@ function os2forms_nemid_form_alter(&$form, &$form_state, $form_id) {
       '#options' => $webform_types,
       '#description' => t('Based on the selected type form irrelevant fields will not be shown to the end used'),
     );
+    $form['os2forms_nemid_fs']['os2form_nemid_link_enable'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Include nemlogin link'),
+      '#default_value' => !empty($settings) ? $settings['nemid_link_enable'] : 0,
+    );
+    $form['os2forms_nemid_fs']['os2form_nemid_link_auto_redirect'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Redirect to nemlogin link automatically'),
+      '#default_value' => !empty($settings) ? $settings['nemid_link_auto_redirect'] : 0,
+      '#states' => array(
+        'invisible' => array(
+          '[name="os2form_nemid_link_enable"]'=> array('checked' => FALSE),
+        ),
+      ),
+    );
 
     $form['#submit'][] = 'os2forms_nemid_form_submit';
   }
   elseif (strstr($form_id, 'webform_client_form')) {
-    $form = os2form_nemid_handle_field_visiblity($form);
+    $form = os2forms_nemid_handle_field_visiblity($form);
+    $nid = $form['#node']->nid;
+    $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_nemid');
+    $nemid_link_enable = !empty($settings) ? $settings['nemid_link_enable'] : 0;
+    $nemid_link_auto_redirect = !empty($settings) ? $settings['nemid_link_auto_redirect'] : 0;
+    if ($nemid_link_enable) {
+      $nemlogin = nemlogin_get_plugin_object();
+      if (empty($nemlogin)) {
+        watchdog("OS2Forms_nemid", 'Nemlogin authorization object is empty. Check nemlogin configuration.', array(), WATCHDOG_WARNING);
+        return;
+      }
+      try {
+        // Check if user is already authentificated.
+        if ($nemlogin->isAuthenticated()) {
+          // If CPR is fetched, prefill the form.
+          $cpr = $nemlogin->fetchValue('cpr');
+          if ($cpr && module_exists('vcv_serviceplatformen')) {
+            $serviceplaformen_message = vcv_serviceplatformen_get_address($cpr);
+            if ($serviceplaformen_message['status']) {
+              $serviceplaformen_message['cpr'] = $cpr;
+              $serviceplaformen_message['pid'] = $nemlogin->fetchValue('pid');
+              os2form_nemid_populate_fields_recursive($form['submitted'], $serviceplaformen_message);
+            }
+          }
+
+          // If CVR is fetched, prefill the form.
+          $cvr = $nemlogin->fetchValue('cvr');
+          if ($cvr && module_exists('cvr_serviceplatformen')) {
+            $serviceplaformen_message = cvr_serviceplatformen_query_info($cvr);
+            if ($serviceplaformen_message['status']) {
+              $serviceplaformen_message['rid'] = $nemlogin->fetchValue('rid');
+              os2forms_nemid_populate_fields_recursive($form['submitted'], $serviceplaformen_message);
+            }
+          }
+        } else {
+          // If user shall be redirected to NemLogin automatically.
+          if ( $nemid_link_auto_redirect) {
+            drupal_goto(os2forms_nemid_get_login_url());
+          }
+        }
+      }
+      catch (Exception $e) {
+          watchdog("OS2Forms_nemid", 'Cannot initialize simplesaml request: @message', array('@message' => $e->getMessage()), WATCHDOG_ERROR);
+      }
+    }
   }
 }
 
+
+
 /**
- * Implements hook_webform_component_info().
+ * Generates a NemID login URL.
+ *
+ * @param array $options
+ *   Link options @see l().
+ *
+ * @return string
+ *   Generated login URL.
  */
-function os2forms_nemid_webform_component_info() {
-  $components = array();
-  $components['nemid_link'] = array(
-    'label' => t('NemID link'),
-    'description' => t('Create NemID link button.'),
-    'features' => array(
-      'required' => FALSE,
-      'group' => FALSE,
-      'title_display' => FALSE,
-      'title_inline' => FALSE,
-      'display' => FALSE,
-      'private' => FALSE,
-      'description' => FALSE,
-      'disabled' => FALSE,
-      'spam_analysis' => FALSE,
-      'attachment' => FALSE,
-    ),
-    'file' => 'components/nemid_link.inc',
-  );
-  return $components;
+function os2forms_nemid_get_login_url(array $options = array()) {
+  $options += array('absolute' => TRUE);
+
+  if (empty($options['query']['destination'])) {
+    $options['query']['destination'] = ltrim(request_uri(), '/');
+  }
+
+  return url('nemlogin/login', $options);
 }
 
 /**
- * Implements hook_webform_component_update().
+ * Generates a NemID logout URL.
+ *
+ * @param array $options
+ *   Link options @see l().
+ *
+ * @return string
+ *   Generated login URL.
  */
-function os2forms_nemid_webform_component_update($component) {
-  if ($component['type'] == 'nemid_link') {
-    $nid = $component['nid'];
-    variable_set('nemlogin_link_enable_' . $nid, 1);
-    variable_set('nemlogin_link_auto_redirect_' . $nid, $component['extra']['nemid_link_auto_redirect']);
+function os2forms_nemid_get_logout_url(array $options = array()) {
+  $options += array('absolute' => TRUE);
+
+  if (empty($options['query']['destination'])) {
+    $options['query']['destination'] = ltrim(request_uri(), '/');
   }
+
+  return url('nemlogin/logout', $options);
 }
 
 /**
- * Implements hook_webform_component_insert().
+ * Implements hook_module_implements_alter().
  */
-function os2forms_nemid_webform_component_insert($component) {
-  if ($component['type'] == 'nemid_link') {
-    $nid = $component['nid'];
-    variable_set('nemlogin_link_enable_' . $nid, 1);
-    variable_set('nemlogin_link_auto_redirect_' . $nid, $component['extra']['nemid_link_auto_redirect']);
-  }
+function os2forms_nemid_module_implements_alter(&$module_list, $context){
+ if($context === "form_alter"){
+  $temp = $module_list['os2forms_nemid'];
+  // Removing the mymodule key/value
+  unset($module_list['os2forms_nemid']);
+  // Adding the mymodule key value as the last member in the list
+  $module_list['os2forms_nemid'] = $temp;
+ }
 }
