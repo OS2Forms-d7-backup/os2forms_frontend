@@ -74,10 +74,10 @@ function _webform_render_nemid_link($component, $value = NULL, $filter = TRUE, $
 
     if($nemlogin_object->isAuthenticated()) {
       $link_text = $component['extra']['nemid_link_logout_text'] ? $component['extra']['nemid_link_logout_text'] : 'Log af Nemlogin';
-      $link_url = os2forms_nemid_get_logout_url();
+      $link_url = nemlogin_get_logout_url();
     } else {
       $link_text = $component['extra']['nemid_link_login_text'] ? $component['extra']['nemid_link_login_text'] : 'Login with Nemlogin';
-      $link_url = os2forms_nemid_get_login_url();
+      $link_url = nemlogin_get_login_url();
     }
 
     $element = array(

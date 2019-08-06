@@ -253,7 +253,7 @@ function os2forms_nemid_form_alter(&$form, &$form_state, $form_id) {
         } else {
           // If user shall be redirected to NemLogin automatically.
           if ( $nemid_link_auto_redirect) {
-            drupal_goto(os2forms_nemid_get_login_url());
+            drupal_goto(nemlogin_get_login_url());
           }
         }
       }
@@ -262,46 +262,6 @@ function os2forms_nemid_form_alter(&$form, &$form_state, $form_id) {
       }
     }
   }
-}
-
-
-
-/**
- * Generates a NemID login URL.
- *
- * @param array $options
- *   Link options @see l().
- *
- * @return string
- *   Generated login URL.
- */
-function os2forms_nemid_get_login_url(array $options = array()) {
-  $options += array('absolute' => TRUE);
-
-  if (empty($options['query']['destination'])) {
-    $options['query']['destination'] = ltrim(request_uri(), '/');
-  }
-
-  return url('nemlogin/login', $options);
-}
-
-/**
- * Generates a NemID logout URL.
- *
- * @param array $options
- *   Link options @see l().
- *
- * @return string
- *   Generated login URL.
- */
-function os2forms_nemid_get_logout_url(array $options = array()) {
-  $options += array('absolute' => TRUE);
-
-  if (empty($options['query']['destination'])) {
-    $options['query']['destination'] = ltrim(request_uri(), '/');
-  }
-
-  return url('nemlogin/logout', $options);
 }
 
 /**
