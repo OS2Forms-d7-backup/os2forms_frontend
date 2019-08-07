@@ -50,7 +50,7 @@ function _webform_render_nemid_link($component, $value = NULL, $filter = TRUE, $
   if ($nemid_link_enable == 0) {
     $element = array(
       '#type' => 'markup',
-      '#markup' => '<p>' . t('In order to add NemID link component, please eneble it first. You can do it ') . l('here', 'node/' . $nid . '/webform/os2forms_settings') . '.</p>',
+      '#markup' => '<p>' . t('In order to use NemID link component, please enable it first. You can do it @link', array('@link' => l('here', 'node/' . $nid . '/webform/os2forms_settings'))) . '</p>',
       '#weight' => $component['weight'],
       '#attributes' => $component['extra']['attributes'],
       '#theme_wrappers' => array('webform_element'),
@@ -72,10 +72,11 @@ function _webform_render_nemid_link($component, $value = NULL, $filter = TRUE, $
       return NULL;
     }
 
-    if($nemlogin_object->isAuthenticated()) {
+    if ($nemlogin_object->isAuthenticated()) {
       $link_text = $component['extra']['nemid_link_logout_text'] ? $component['extra']['nemid_link_logout_text'] : 'Log af Nemlogin';
       $link_url = nemlogin_get_logout_url();
-    } else {
+    }
+    else {
       $link_text = $component['extra']['nemid_link_login_text'] ? $component['extra']['nemid_link_login_text'] : 'Login with Nemlogin';
       $link_url = nemlogin_get_login_url();
     }
@@ -93,7 +94,7 @@ function _webform_render_nemid_link($component, $value = NULL, $filter = TRUE, $
         'nemid_link_logout_text',
       ),
     );
-  }  
+  }
 
   return $element;
 }
@@ -133,7 +134,7 @@ function _form_builder_webform_form_builder_map_nemid_link() {
   );
  }
 
- /**
+/**
  * Implements _form_builder_webform_form_builder_properties_component().
  */
 function _form_builder_webform_form_builder_properties_nemid_link() {
@@ -147,7 +148,6 @@ function _form_builder_webform_form_builder_properties_nemid_link() {
    'default_value' => array('form' => 'nemid_link_webform_property_nemid_link_auto_redirect_form',)
   );
 }
-
 
 /**
  * Configuration form for the "nemid_link_login_text" property.

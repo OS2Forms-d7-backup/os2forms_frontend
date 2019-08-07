@@ -7,5 +7,6 @@ dependencies[] = nemid
 dependencies[] = nemid_login
 dependencies[] = nemlogin
 dependencies[] = vcv_serviceplatformen
+dependencies[] = cvr_serviceplatformen
 features[features_api][] = api:2
 project path = sites/all/modules/os2forms/submodules
