@@ -198,8 +198,9 @@ function os2forms_nemid_form_alter(&$form, &$form_state, $form_id) {
     );
     $form['os2forms_nemid_fs']['os2form_nemid_link_enable'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Include nemlogin link'),
+      '#title' => t('Activate nemlogin link'),
       '#default_value' => !empty($settings) ? $settings['nemid_link_enable'] : 0,
+      '#description' => t('For the performance reasons nemlogin link must be activated per webform before NemID link component becomes available.')
     );
     $form['os2forms_nemid_fs']['os2form_nemid_link_auto_redirect'] = array(
       '#type' => 'checkbox',
