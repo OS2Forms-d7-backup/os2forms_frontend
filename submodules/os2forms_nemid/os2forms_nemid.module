@@ -190,27 +190,21 @@ function os2forms_nemid_form_alter(&$form, &$form_state, $form_id) {
 
     $form['os2forms_nemid_fs']['os2form_nemid_webform_type'] = array(
       '#type' => 'select',
-      '#title' => t('NemID form type'),
+      '#title' => t('Form type'),
       '#default_value' => !empty($settings) ? $settings['webform_type'] : NULL,
       '#empty_option' => t('Not specified'),
       '#options' => $webform_types,
-      '#description' => t('Based on the selected type form irrelevant fields will not be shown to the end used'),
+      '#description' => t('Based on the selected type form irrelevant fields will not be shown to the end user'),
     );
     $form['os2forms_nemid_fs']['os2form_nemid_link_enable'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Activate nemlogin link'),
+      '#type' => 'hidden',
       '#default_value' => !empty($settings) ? $settings['nemid_link_enable'] : 0,
-      '#description' => t('For the performance reasons nemlogin link must be activated per webform before NemID link component becomes available.')
     );
     $form['os2forms_nemid_fs']['os2form_nemid_link_auto_redirect'] = array(
       '#type' => 'checkbox',
       '#title' => t('Redirect to nemlogin link automatically'),
       '#default_value' => !empty($settings) ? $settings['nemid_link_auto_redirect'] : 0,
-      '#states' => array(
-        'invisible' => array(
-          '[name="os2form_nemid_link_enable"]' => array('checked' => FALSE),
-        ),
-      ),
+      '#description' => t('Redirect works only if webform has one or more components of type nemlogin link.'),
     );
 
     $form['#submit'][] = 'os2forms_nemid_form_submit';
@@ -276,4 +270,32 @@ function os2forms_nemid_module_implements_alter(&$module_list, $context){
   // Adding the mymodule key value as the last member in the list
   $module_list['os2forms_nemid'] = $temp;
  }
+}
+
+/**
+ * Implements webform_component_delete().
+ *
+ * Activates nemid_link_enable for the given webform.
+ */
+function os2forms_nemid_webform_component_insert($component) {
+  $nid = $component['nid'];
+
+  $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_nemid');
+  $settings['nemid_link_enable'] = TRUE;
+
+  os2forms_frontend_webform_save_setting($nid, 'os2forms_nemid', $settings);
+}
+
+/**
+ * Implements webform_component_delete().
+ *
+ * Deactivates nemid_link_enable for the given webform.
+ */
+function os2forms_nemid_webform_component_delete($component) {
+  $nid = $component['nid'];
+
+  $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_nemid');
+  $settings['nemid_link_enable'] = FALSE;
+
+  os2forms_frontend_webform_save_setting($nid, 'os2forms_nemid', $settings);
 }
