@@ -168,6 +168,11 @@ function os2forms_nemid_form_alter(&$form, &$form_state, $form_id) {
   elseif ($form_id == 'webform_component_edit_form') {
     if ($form['type']['#value'] == 'nemid_link') {
       $form['encryption']['#access'] = FALSE;
+      $nid = $form['nid']['#value'];
+      if (variable_get('nemid_login_block_enable_' . $nid, FALSE)) {
+        form_set_error('', 'NemID block is already enabled on this form. Please disable it '
+            . l('here', 'node/' .  $nid . '/webform/configure', array('attributes' => array('target' => '_blank'))));
+      }
     }
   }
   elseif ($form_id == 'os2forms_settings_form') {
@@ -279,7 +284,6 @@ function os2forms_nemid_module_implements_alter(&$module_list, $context){
  */
 function os2forms_nemid_webform_component_insert($component) {
   $nid = $component['nid'];
-
   $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_nemid');
   $settings['nemid_link_enable'] = TRUE;
 
