@@ -295,10 +295,12 @@ function os2forms_nemid_module_implements_alter(&$module_list, $context){
  */
 function os2forms_nemid_webform_component_insert($component) {
   $nid = $component['nid'];
-  $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_nemid');
-  $settings['nemid_link_enable'] = TRUE;
+  if (strpos($component['type'], 'nemid') === 0) {
+    $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_nemid');
+    $settings['nemid_link_enable'] = TRUE;
 
-  os2forms_frontend_webform_save_setting($nid, 'os2forms_nemid', $settings);
+    os2forms_frontend_webform_save_setting($nid, 'os2forms_nemid', $settings);
+  }
 }
 
 /**
@@ -308,9 +310,19 @@ function os2forms_nemid_webform_component_insert($component) {
  */
 function os2forms_nemid_webform_component_delete($component) {
   $nid = $component['nid'];
-
-  $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_nemid');
-  $settings['nemid_link_enable'] = FALSE;
-
-  os2forms_frontend_webform_save_setting($nid, 'os2forms_nemid', $settings);
+  if (strpos($component['type'], 'nemid') === 0) {
+    $node = node_load($nid);
+    $nemid_components_exist = FALSE;
+    foreach($node->webform['components'] as $webform_component) {
+      if ($webform_component['cid'] != $component['cid'] && strpos($webform_component['type'], 'nemid') === 0) {
+        $nemid_components_exist = TRUE;
+        break;
+      }
+    }
+    if ($nemid_components_exist === FALSE) {
+      $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_nemid');
+      $settings['nemid_link_enable'] = FALSE;
+      os2forms_frontend_webform_save_setting($nid, 'os2forms_nemid', $settings);
+    }
+  }
 }
