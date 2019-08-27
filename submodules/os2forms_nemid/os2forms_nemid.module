@@ -175,6 +175,17 @@ function os2forms_nemid_form_alter(&$form, &$form_state, $form_id) {
       }
     }
   }
+  elseif ($form_id === 'webform_components_form') {
+    $nid = $form['nid']['#value'];
+      if (variable_get('nemid_login_block_enable_' . $nid, FALSE)) {
+        foreach($form['#node']->webform['components'] as $component) {
+          if ($component['type'] === 'nemid_link') {
+            drupal_set_message ('NemID block is already enabled on this form. Please disable it '
+            . l('here', 'node/' .  $nid . '/webform/configure', array('attributes' => array('target' => '_blank'))), 'error');
+          }
+        }
+      }
+  }
   elseif ($form_id == 'os2forms_settings_form') {
     // Adding NemID related setting to webform.
 
