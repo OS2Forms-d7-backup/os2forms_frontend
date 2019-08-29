@@ -220,7 +220,7 @@ function os2forms_nemid_form_alter(&$form, &$form_state, $form_id) {
       '#type' => 'checkbox',
       '#title' => t('Redirect to nemlogin link automatically'),
       '#default_value' => !empty($settings) ? $settings['nemid_link_auto_redirect'] : 0,
-      '#description' => t('Redirect works only if webform has one or more of nemid components.'),
+      '#description' => t('Redirection only works if webform has one or more components of type “NemID”.'),
     );
 
     $form['#submit'][] = 'os2forms_nemid_form_submit';
