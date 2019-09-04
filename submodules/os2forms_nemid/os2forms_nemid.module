@@ -168,7 +168,23 @@ function os2forms_nemid_form_alter(&$form, &$form_state, $form_id) {
   elseif ($form_id == 'webform_component_edit_form') {
     if ($form['type']['#value'] == 'nemid_link') {
       $form['encryption']['#access'] = FALSE;
+      $nid = $form['nid']['#value'];
+      if (variable_get('nemid_login_block_enable_' . $nid, FALSE)) {
+        form_set_error('', 'NemID block is already enabled on this form. Please disable it '
+            . l('here', 'node/' .  $nid . '/webform/configure', array('attributes' => array('target' => '_blank'))));
+      }
     }
+  }
+  elseif ($form_id === 'webform_components_form') {
+    $nid = $form['nid']['#value'];
+      if (variable_get('nemid_login_block_enable_' . $nid, FALSE)) {
+        foreach($form['#node']->webform['components'] as $component) {
+          if ($component['type'] === 'nemid_link') {
+            drupal_set_message ('NemID block is already enabled on this form. Please disable it '
+            . l('here', 'node/' .  $nid . '/webform/configure', array('attributes' => array('target' => '_blank'))), 'error');
+          }
+        }
+      }
   }
   elseif ($form_id == 'os2forms_settings_form') {
     // Adding NemID related setting to webform.
@@ -204,7 +220,7 @@ function os2forms_nemid_form_alter(&$form, &$form_state, $form_id) {
       '#type' => 'checkbox',
       '#title' => t('Redirect to nemlogin link automatically'),
       '#default_value' => !empty($settings) ? $settings['nemid_link_auto_redirect'] : 0,
-      '#description' => t('Redirect works only if webform has one or more components of type nemlogin link.'),
+      '#description' => t('Redirection only works if webform has one or more components of type “NemID”.'),
     );
 
     $form['#submit'][] = 'os2forms_nemid_form_submit';
@@ -279,11 +295,12 @@ function os2forms_nemid_module_implements_alter(&$module_list, $context){
  */
 function os2forms_nemid_webform_component_insert($component) {
   $nid = $component['nid'];
+  if (strpos($component['type'], 'nemid') === 0) {
+    $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_nemid');
+    $settings['nemid_link_enable'] = TRUE;
 
-  $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_nemid');
-  $settings['nemid_link_enable'] = TRUE;
-
-  os2forms_frontend_webform_save_setting($nid, 'os2forms_nemid', $settings);
+    os2forms_frontend_webform_save_setting($nid, 'os2forms_nemid', $settings);
+  }
 }
 
 /**
@@ -293,9 +310,19 @@ function os2forms_nemid_webform_component_insert($component) {
  */
 function os2forms_nemid_webform_component_delete($component) {
   $nid = $component['nid'];
-
-  $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_nemid');
-  $settings['nemid_link_enable'] = FALSE;
-
-  os2forms_frontend_webform_save_setting($nid, 'os2forms_nemid', $settings);
+  if (strpos($component['type'], 'nemid') === 0) {
+    $node = node_load($nid);
+    $nemid_components_exist = FALSE;
+    foreach($node->webform['components'] as $webform_component) {
+      if ($webform_component['cid'] != $component['cid'] && strpos($webform_component['type'], 'nemid') === 0) {
+        $nemid_components_exist = TRUE;
+        break;
+      }
+    }
+    if ($nemid_components_exist === FALSE) {
+      $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_nemid');
+      $settings['nemid_link_enable'] = FALSE;
+      os2forms_frontend_webform_save_setting($nid, 'os2forms_nemid', $settings);
+    }
+  }
 }

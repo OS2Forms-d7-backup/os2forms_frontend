@@ -26,7 +26,7 @@ function os2forms_nemid_form_submit($form, $form_state) {
  * @return array
  *   Returns modified webform;
  */
-function os2forms_nemid_handle_field_visiblity($form) {
+function os2forms_nemid_handle_field_visiblity(&$form) {
   $nid = $form['#node']->nid;
   $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_nemid');
 
@@ -63,6 +63,9 @@ function os2forms_nemid_handle_field_visiblity($form) {
     if ($webform_type) {
       if (strcasecmp($nemlogin_type, $webform_type) !== 0) {
         drupal_set_message(t('Your login type does match the login type required by webform. Please log out and sign in differently'), 'warning');
+        foreach (element_children($form) as $key) {
+          $form['actions']['submit']['#disabled'] = TRUE;
+        }
       }
     }
   }

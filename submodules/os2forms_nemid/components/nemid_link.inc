@@ -47,6 +47,7 @@ function _webform_render_nemid_link($component, $value = NULL, $filter = TRUE, $
   $nid = $component['nid'];
   $settings = os2forms_frontend_webform_get_setting($nid, 'os2forms_nemid');
   $nemid_link_enable = !empty($settings) ? $settings['nemid_link_enable'] : 0;
+
   if ($nemid_link_enable == 0) {
     $element = array(
       '#type' => 'markup',
@@ -59,6 +60,10 @@ function _webform_render_nemid_link($component, $value = NULL, $filter = TRUE, $
         'nemid_link_logout_text',
       ),
     );
+  }
+  elseif (variable_get('nemid_login_block_enable_' . $nid, FALSE)) {
+    drupal_set_message ('NemID block is already enabled on this form. Please disable it '
+            . l('here', 'node/' .  $nid . '/webform/configure', array('attributes' => array('target' => '_blank'))), 'error');
   }
   else {
     $nemlogin_object = nemlogin_get_plugin_object();
