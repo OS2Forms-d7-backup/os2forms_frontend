@@ -138,6 +138,15 @@ function os2forms_frontend_webform_submission_insert($node, $submission) {
   os2forms_frontend_add_unanonymized_submission($submission);
 }
 
+/**
+ * Implements hook_webform_submission_delete().
+ *
+ * Deletes the submission from a list of unanonymized submissions.
+ */
+function os2forms_frontend_webform_submission_delete($node, $submission) {
+  os2forms_frontend_delete_unanonymized_submission($submission->uuid);
+}
+
 /*
  * Job to clear all submissions scheduled to be cleared.
  */
