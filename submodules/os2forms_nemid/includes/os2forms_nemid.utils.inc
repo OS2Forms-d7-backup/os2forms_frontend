@@ -48,10 +48,11 @@ function os2forms_nemid_handle_field_visiblity(&$form) {
   // Getting user nemlogin type.
   $nemlogin_type = NULL;
   if ($nemlogin_object->isAuthenticated()) {
-    if ($nemlogin_object->fetchValue('cpr')) {
-      $nemlogin_type = OS2FORMS_NEMID_WEBFORM_COMPONENT_TYPE_PERSONAL;
-    } elseif ($nemlogin_object->fetchValue('cvr')) {
+    if ($nemlogin_object->fetchValue('cvr')) {
       $nemlogin_type = OS2FORMS_NEMID_WEBFORM_COMPONENT_TYPE_COMPANY;
+    }
+    elseif ($nemlogin_object->fetchValue('cpr')) {
+      $nemlogin_type = OS2FORMS_NEMID_WEBFORM_COMPONENT_TYPE_PERSONAL;
     }
   }
 
@@ -126,7 +127,7 @@ function os2forms_nemid_hide_fields_recursive(array &$tree, $allowed_type) {
     }
   }
 }
- 
+
 /**
  * Updating fields with the values from nemlogin request.
  *
