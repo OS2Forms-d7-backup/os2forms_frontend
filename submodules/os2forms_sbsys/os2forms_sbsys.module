@@ -23,13 +23,26 @@ function os2forms_sbsys_mail_alter(&$message) {
         $no_send_sbsys_mail = array_diff($no_send_sbsys_mail, array(0));
         if ( !empty($no_send_sbsys_mail) ) {
           foreach ($no_send_sbsys_mail as $eid) {
+            $mapping = isset($node->webform['emails'][$eid]['extra']['email_mapping']) ? $node->webform['emails'][$eid]['extra']['email_mapping'] : NULL;
             $email_addresses = $node->webform['emails'][$eid]['email'];
+            $cid = $email_addresses;
             if ( isset($node->webform['components'][$email_addresses]) ) {
-              $email_addresses = array_pop($submission->data[$email_addresses]);
+              $email_addresses = $submission->data[$email_addresses];
+               if (empty($email_addresses)) {
+                $email_addresses = $submission->data[$cid];
+              }
             }
             else {
               $email_addresses = array_filter(explode(',', check_plain($node->webform['emails'][$eid]['email'])));
             }
+            foreach ($email_addresses as $key => $address) {
+              if (is_numeric($address)) {
+                if (isset($mapping) && isset($mapping[$address])) {
+                  $email_addresses[$key] = $mapping[$address];
+                }
+              }
+            }
+
             if (is_array($email_addresses) && in_array($message['to'], $email_addresses) || trim($message['to']) == trim($email_addresses)) {
               $send_email = FALSE;
               break;
