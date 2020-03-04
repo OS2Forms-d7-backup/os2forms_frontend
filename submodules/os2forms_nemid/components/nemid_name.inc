@@ -75,7 +75,7 @@ function _webform_csv_headers_nemid_name($component, $export_options) {
  * Implements _webform_csv_data_component().
  */
 function _webform_csv_data_nemid_name($component, $export_options, $value) {
-  return nemid_webform_csv_data_component($component, $export_options, $value);
+  return os2forms_nemid_webform_csv_data_component($component, $export_options, $value);
 }
 
 /**
