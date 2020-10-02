@@ -242,23 +242,29 @@ function os2forms_nemid_form_alter(&$form, &$form_state, $form_id) {
         if ($nemlogin->isAuthenticated()) {
           // If CPR is fetched, prefill the form.
           $cpr = $nemlogin->fetchValue('cpr');
-          if ($cpr && module_exists('vcv_serviceplatformen')) {
-            $serviceplaformen_message = vcv_serviceplatformen_get_address($cpr);
-            if ($serviceplaformen_message['status']) {
-              $serviceplaformen_message['cpr'] = $cpr;
-              $serviceplaformen_message['pid'] = $nemlogin->fetchValue('pid');
-              os2forms_nemid_populate_fields_recursive($form['submitted'], $serviceplaformen_message);
+          if ($cpr) {
+            $nemid_data['cpr'] = $cpr;
+            $nemid_data['pid'] = $nemlogin->fetchValue('pid');
+            if (module_exists('vcv_serviceplatformen')) {
+              $serviceplaformen_message = vcv_serviceplatformen_get_address($cpr);
+              if ($serviceplaformen_message['status']) {
+                $nemid_data = array_merge($nemid_data, $serviceplaformen_message);
+              }
             }
+            os2forms_nemid_populate_fields_recursive($form['submitted'], $nemid_data);
           }
-
           // If CVR is fetched, prefill the form.
           $cvr = $nemlogin->fetchValue('cvr');
-          if ($cvr && module_exists('cvr_serviceplatformen')) {
-            $serviceplaformen_message = cvr_serviceplatformen_query_info($cvr);
-            if ($serviceplaformen_message['status']) {
-              $serviceplaformen_message['rid'] = $nemlogin->fetchValue('rid');
-              os2forms_nemid_populate_fields_recursive($form['submitted'], $serviceplaformen_message);
+           if ($cvr) {
+            $nemid_data['cvr'] = $cvr;
+            $nemid_data['rid'] = $nemlogin->fetchValue('rid');
+            if (module_exists('vcv_serviceplatformen')) {
+              $serviceplaformen_message = cvr_serviceplatformen_query_info($cvr);
+              if ($serviceplaformen_message['status']) {
+                $nemid_data = array_merge($nemid_data, $serviceplaformen_message);
+              }
             }
+            os2forms_nemid_populate_fields_recursive($form['submitted'], $nemid_data);
           }
         }
         else {
