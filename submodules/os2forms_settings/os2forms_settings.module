@@ -3,3 +3,37 @@
  * @file
  * Code for the OS2Forms settings feature.
  */
+
+/**
+ * Implements hook_menu().
+ */
+function os2forms_settings_menu() {
+  $items['admin/config/os2forms'] = array(
+    'title' => 'OS2Forms Setup',
+    'description' => 'Set up OS2FORMS',
+    'position' => 'right',
+    'weight' => -15,
+    'access arguments' => array('administer os2web'),
+    'page callback' => 'system_admin_menu_block_page',
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/config/os2forms/settings'] = array(
+    'title' => 'OS2Forms Settings',
+    'description' => 'General settings for the OS2Forms project',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('os2forms_settings_settings_form'),
+    'access arguments' => array('administer os2web'),
+  );
+  return $items;
+}
+
+function os2forms_settings_settings_form($form, $form_state) {
+  $form['webform_redirect_to_frontpage'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Redirect to frontpage from ALL webforms'),
+    '#default_value' => variable_get('webform_redirect_to_frontpage', FALSE),
+  );
+  return system_settings_form($form);
+}

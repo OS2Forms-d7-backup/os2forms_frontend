@@ -91,7 +91,7 @@ function os2forms_frontend_tokens($type, $tokens, array $data = array(), array $
       switch ($name) {
         case 'original_referrer_page':
           $replacements[$original] = '';
-          
+
           if (isset($_SESSION['original_referrer_page'])) {
             $replacements[$original] = $_SESSION['original_referrer_page'];
             if ($sanitize) {
@@ -113,7 +113,11 @@ function os2forms_frontend_tokens($type, $tokens, array $data = array(), array $
  * Saves original_referrer_page into the session.
  */
 function os2forms_frontend_node_view($node, $view_mode, $langcode) {
+
   if ($node->type == 'webform') {
+    if ((bool) variable_get('webform_redirect_to_frontpage', FALSE)) {
+      drupal_goto('/');
+    }
     if (!empty($_SERVER['HTTP_REFERER'])) {
       // Composing referrer URL that can be used for comparison.
       $referer_url_parts = parse_url($_SERVER['HTTP_REFERER']);
